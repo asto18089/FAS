@@ -1,6 +1,0 @@
-#pragma once
-
-#include <string>
-
-void Topappmonitor(std::string &Topapp, unsigned int second);
-void startTopappmonitor(std::string &Topapp);

@@ -16,5 +16,5 @@ public:
     listProfile(const char *location);
     void startProfilemonitor(const unsigned int& second);
     void List();
-    bool Inlist(const std::string &app);
+    bool Inlist(const std::string& app);
 };

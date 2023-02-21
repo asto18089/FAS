@@ -19,9 +19,9 @@ using std::ref;
 using std::string;
 
 Cpufreq::Cpufreq() {
-    getFreq();
     kpi = 0;
-    start_cpu_writer();
+    
+    getFreq();
 }
 
 void Cpufreq::getFreq() { //读取频率表
@@ -33,7 +33,7 @@ void Cpufreq::getFreq() { //读取频率表
     getline(list, freq);
     list.close();
     
-    if(!list) {
+    if(! list) {
         list.open("/sys/devices/system/cpu/cpufreq/policy3/scaling_available_frequencies"); 
         getline(list, freq);
         list.close();
@@ -121,39 +121,25 @@ void Cpufreq::Cpu_middle_limit() {
     
     if (tmp != target) {
         Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq", middle_cpu_table[target]);
-        Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq", middle_cpu_table[target]);
-        
         Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", middle_cpu_table[target]);
-        Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_min_freq", middle_cpu_table[target]);
     }
     tmp = target;
     //cout << "中核taget："<< *target <<  "kpi:" << kpi << endl;
 }
 
 void Cpufreq::cpu_writer(Cpufreq& device) {
-    prctl(PR_SET_NAME, "Cpu_freq_writer");
-    DAEMON: // cpu频率写入守护进程
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    prctl(PR_SET_NAME, "Cpufreq writer");
+    
     device.Cpu_middle_limit();
     device.Cpu_big_limit();
-    
-    goto DAEMON;
-}
-
-void Cpufreq::start_cpu_writer() {
-    thread tcpu_writer(cpu_writer, ref(*this));
-    tcpu_writer.detach();
 }
 
 void Cpufreq::limit_clear() {
     Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq", big_cpu_table[0]);
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq", big_cpu_table[0]);
     
     Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq", middle_cpu_table[0]);
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq", middle_cpu_table[0]);
     
     Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", middle_cpu_table[0]);
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_min_freq", middle_cpu_table[0]);
 }
 
 void Cpufreq::limit(const int& n) {
@@ -170,4 +156,7 @@ void Cpufreq::limit(const int& n) {
             kpi = kpi_min;
         }
     }
+    
+    thread t_cpu_writer(cpu_writer, ref(*this));
+    t_cpu_writer.detach();
 }

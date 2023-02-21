@@ -34,7 +34,6 @@ class Cpufreq {
     void getFreq();
     void Cpu_big_limit();
     void Cpu_middle_limit();
-    void start_cpu_writer();
     static void cpu_writer(Cpufreq& device);
 public:
     Cpufreq();
