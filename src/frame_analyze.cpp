@@ -94,7 +94,7 @@ FtimeStamps getOriginalData() {
                 Fdata.vsync_time_stamps.clear();
                 Fdata.end_time_stamps.clear();
                 goto ANALYZE_END;
-            } else if (i >= 9999999999999) {
+            } else if (i >= 99999999999999) {
                 goto ANALYZE_END;
             }
         }

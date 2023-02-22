@@ -29,32 +29,36 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
     static unsigned long long first_3_avg_frametime;
     
     for (auto i = vsync_begin + 1; i < vsync_end - 1; i++) {
-        vsysc_frametime.push_back(*i - *(i - 1));
+        if (*i > *(i - 1)) {
+            vsysc_frametime.push_back(*i - *(i - 1));
+        }
     }
     
     first_3_avg_frametime = (*vsysc_frametime.begin() + *(vsysc_frametime.begin() + 1)) / 2;
     
-    if (first_3_avg_frametime > 99999999) {
-        return Jdata;
-    }
+    //cout << first_3_avg_frametime << endl;
     
     for (auto i : vsysc_frametime) {
-        if (i > 100000000) {
+        if (i > 1000000000) {
             continue;
         }
         
-        //const bool& bg_movie_2 = (i >= 2 * MOVIE_FRAME_TIME);
-        //const bool& bg_movie_3 = (i >= 3 * MOVIE_FRAME_TIME);
-        
-        /*if (bg_movie_2 && i > first_3_avg_frametime) {
-            Jdata.jank_count++;
-        } else if (bg_movie_3 && i > first_3_avg_frametime) {
+        if (i > 1.3 * first_3_avg_frametime) {
             Jdata.big_jank_count++;
-        }*/
-        if (i > 1.1 * first_3_avg_frametime) {
+            for (auto it : vsysc_frametime) {
+                if ((i + it) / 2 < 1.3 * first_3_avg_frametime) {
+                    Jdata.big_jank_count--;
+                    break;
+                }
+            }
+        } else if (i > 1.1 * first_3_avg_frametime) {
             Jdata.jank_count++;
-        } else if (i > 1.3 * first_3_avg_frametime) {
-            Jdata.big_jank_count++;
+            for (auto it : vsysc_frametime) {
+                if ((i + it) / 2 < 1.1 * first_3_avg_frametime) {
+                    Jdata.jank_count--;
+                    break;
+                }
+            }
         }
     }
     
