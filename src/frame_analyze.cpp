@@ -30,8 +30,6 @@ string getSurfaceview() {
         return string(); //It's empty
     }
     
-    static string analyze_last;
-    
     while (fgets (buffer, sizeof(buffer) , game) ) {
         string result = buffer;
         if (result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos) {
@@ -57,6 +55,7 @@ FtimeStamps getOriginalData() {
     FILE *dumpsys = popen(cmd.c_str(), "r");
     
     char buffer[1024] = {0};
+    static string analyze_last;
     
     while (fgets(buffer, sizeof(buffer), dumpsys)) {
         static string analyze;

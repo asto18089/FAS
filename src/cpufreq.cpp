@@ -135,10 +135,8 @@ void Cpufreq::cpu_writer(Cpufreq& device) {
 }
 
 void Cpufreq::limit_clear() {
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq", big_cpu_table[0]);
-    
+    Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq", big_cpu_table[0]);  
     Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq", middle_cpu_table[0]);
-    
     Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", middle_cpu_table[0]);
 }
 
