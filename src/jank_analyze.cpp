@@ -34,8 +34,6 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
     
     first_3_avg_frametime = (*vsysc_frametime.begin() + *(vsysc_frametime.begin() + 1)) / 2;
     
-    //cout << first_3_avg_frametime << endl;
-    
     if (first_3_avg_frametime > 99999999) {
         return Jdata;
     }
