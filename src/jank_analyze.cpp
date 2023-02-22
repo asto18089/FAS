@@ -55,7 +55,7 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
         }*/
         if (i > 1.1 * first_3_avg_frametime) {
             Jdata.jank_count++;
-        } else if (i > 1.5 * first_3_avg_frametime) {
+        } else if (i > 1.3 * first_3_avg_frametime) {
             Jdata.big_jank_count++;
         }
     }

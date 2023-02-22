@@ -30,6 +30,8 @@ string getSurfaceview() {
         return string(); //It's empty
     }
     
+    static string analyze_last;
+    
     while (fgets (buffer, sizeof(buffer) , game) ) {
         string result = buffer;
         if (result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos) {
@@ -61,6 +63,14 @@ FtimeStamps getOriginalData() {
         static unsigned long long timestamps[3] = {0};
         analyze = buffer;
         analyze.pop_back();
+        
+        if (analyze_last == analyze) {
+            Fdata.start_time_stamps.clear();
+            Fdata.vsync_time_stamps.clear();
+            Fdata.end_time_stamps.clear();
+            
+            continue;
+        }
         
         static bool finded(false);
         for (size_t pos = 0, len = 0, i = 0, pos_b = 0; pos < analyze.length(); pos++) {
@@ -102,12 +112,14 @@ FtimeStamps getOriginalData() {
                 Fdata.end_time_stamps.push_back(timestamps[i]);
             }
         }
+        
+        analyze_last = analyze;
 
         ANALYZE_END:
         continue;
     }
     
-    system("dumpsys SurfaceFlinger --latency-clear > /dev/null 2>&1");
+    //system("dumpsys SurfaceFlinger --latency-clear > /dev/null 2>&1");
     
     return Fdata;
 }

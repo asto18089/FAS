@@ -45,8 +45,8 @@ int main() {
     
     jank_data jdata = analyzeFrameData(getOriginalData());
     
-    cout << "Jank count" << jdata.jank_count << endl;
-    cout << "Big Jank count" << jdata.big_jank_count << endl;
+    /*cout << "Jank count" << jdata.jank_count << endl;
+    cout << "Big Jank count" << jdata.big_jank_count << endl;*/
     
     if (jdata.big_jank_count > 0) {
         cpu_controller.limit(2);

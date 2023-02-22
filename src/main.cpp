@@ -56,7 +56,7 @@ int main() {
         cpu_controller.limit(-1);
     }
     
-    sleep_for(milliseconds(400));
+    sleep_for(milliseconds(200));
     
     goto LOOP; // LOOP never ends
 }
