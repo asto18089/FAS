@@ -16,10 +16,14 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
         return Jdata;
     }
     
-    const unsigned long long MOVIE_FRAME_TIME = 1000 * 1000 * 1000 / 24;
+    //const unsigned long long MOVIE_FRAME_TIME = 1000 * 1000 * 1000 / 24;
 
     const auto &vsync_begin = Fdata.vsync_time_stamps.begin();
     const auto &vsync_end = Fdata.vsync_time_stamps.end();
+    
+    /*for (auto i : Fdata.vsync_time_stamps) {
+        cout << i << endl;
+    }*/
     
     vector <unsigned long long>vsysc_frametime;
     static unsigned long long first_3_avg_frametime;
@@ -28,16 +32,30 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
         vsysc_frametime.push_back(*i - *(i - 1));
     }
     
-    first_3_avg_frametime = *(vsysc_frametime.begin()) + *(vsysc_frametime.begin() + 1) / 2;
-    cout << first_3_avg_frametime << endl;
+    first_3_avg_frametime = (*vsysc_frametime.begin() + *(vsysc_frametime.begin() + 1)) / 2;
+    
+    //cout << first_3_avg_frametime << endl;
+    
+    if (first_3_avg_frametime > 99999999) {
+        return Jdata;
+    }
     
     for (auto i : vsysc_frametime) {
-        const bool& bg_movie_2 = (i >= 2 * MOVIE_FRAME_TIME);
-        const bool& bg_movie_3 = (i >= 3 * MOVIE_FRAME_TIME);
+        if (i > 100000000) {
+            continue;
+        }
         
-        if (bg_movie_2 && i > first_3_avg_frametime) {
+        //const bool& bg_movie_2 = (i >= 2 * MOVIE_FRAME_TIME);
+        //const bool& bg_movie_3 = (i >= 3 * MOVIE_FRAME_TIME);
+        
+        /*if (bg_movie_2 && i > first_3_avg_frametime) {
             Jdata.jank_count++;
         } else if (bg_movie_3 && i > first_3_avg_frametime) {
+            Jdata.big_jank_count++;
+        }*/
+        if (i > 1.1 * first_3_avg_frametime) {
+            Jdata.jank_count++;
+        } else if (i > 1.5 * first_3_avg_frametime) {
             Jdata.big_jank_count++;
         }
     }

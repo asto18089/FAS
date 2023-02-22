@@ -58,7 +58,7 @@ FtimeStamps getOriginalData() {
     
     while (fgets(buffer, sizeof(buffer), dumpsys)) {
         static string analyze;
-        static unsigned long long timestamps[3];
+        static unsigned long long timestamps[3] = {0};
         analyze = buffer;
         analyze.pop_back();
         
@@ -71,7 +71,7 @@ FtimeStamps getOriginalData() {
                 pos_b = pos;
                 finded = true;
             } else if (finded && (! isnumber || pos == analyze.length() - 1)) {
-                len = pos - pos_b;
+                len = pos - pos_b + 1;
                 finded = false;
                 
                 timestamps[i] = atoll(analyze.substr(pos_b, len).c_str());
@@ -80,8 +80,10 @@ FtimeStamps getOriginalData() {
         }
         
         for (auto i : timestamps) {
-            cout << i << endl;
             if (i == 0) {
+                Fdata.start_time_stamps.clear();
+                Fdata.vsync_time_stamps.clear();
+                Fdata.end_time_stamps.clear();
                 goto ANALYZE_END;
             } else if (i >= 99999999999999) {
                 goto ANALYZE_END;
