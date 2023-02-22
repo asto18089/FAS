@@ -1,12 +1,20 @@
 #include <vector>
+#include <iostream>
 
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
 
 using std::vector;
+using std::string;
+using std::cout;
+using std::endl;
 
-jankdata analyzeFrameData(const FtimeStamps& Fdata) {
-    jankdata Jdata;
+jank_data analyzeFrameData(const FtimeStamps& Fdata) {
+    jank_data Jdata;
+    
+    if (Fdata.vsync_time_stamps.size() < 4) {
+        return Jdata;
+    }
     
     const unsigned long long MOVIE_FRAME_TIME = 1000 * 1000 * 1000 / 24;
 
@@ -21,14 +29,15 @@ jankdata analyzeFrameData(const FtimeStamps& Fdata) {
     }
     
     first_3_avg_frametime = *(vsysc_frametime.begin()) + *(vsysc_frametime.begin() + 1) / 2;
+    cout << first_3_avg_frametime << endl;
     
     for (auto i : vsysc_frametime) {
-        bool& 2bg_movie = (i >= 2 * MOVIE_FRAME_TIME);
-        bool& 3bg_movie = (i >= 3 * MOVIE_FRAME_TIME);
+        const bool& bg_movie_2 = (i >= 2 * MOVIE_FRAME_TIME);
+        const bool& bg_movie_3 = (i >= 3 * MOVIE_FRAME_TIME);
         
-        if (2bg_movie && i > first_3_avg_frametime) {
+        if (bg_movie_2 && i > first_3_avg_frametime) {
             Jdata.jank_count++;
-        } else if (3bg_movie && i > first_3_avg_frametime) {
+        } else if (bg_movie_3 && i > first_3_avg_frametime) {
             Jdata.big_jank_count++;
         }
     }

@@ -51,8 +51,10 @@ string getSurfaceview() {
 FtimeStamps getOriginalData() {
     FtimeStamps Fdata;
     
-    cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\'";
+    string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\'";
     FILE *dumpsys = popen(cmd.c_str(), "r");
+    
+    char buffer[1024] = {0};
     
     while (fgets(buffer, sizeof(buffer), dumpsys)) {
         static string analyze;
@@ -60,19 +62,15 @@ FtimeStamps getOriginalData() {
         analyze = buffer;
         analyze.pop_back();
         
-        for (size_t pos = 0, len = 0, i = 0; pos < analyze.length(); pos++) {
-            if (analyze.find(' ') == string::npos) {
-                goto ANALYZE_END;
-            }
+        static bool finded(false);
+        for (size_t pos = 0, len = 0, i = 0, pos_b = 0; pos < analyze.length(); pos++) {
             
-            bool &isnumber = (analyze[i] >= '0' && analyze[i] <= 9);
-            static bool finded = false;
-            static size_t pos_b = 0;
+            const bool& isnumber = (analyze[pos] <= '9' && analyze[pos] >= '0');
             
-            if (isnumber && ! finded) {
+            if (! finded && isnumber) {
                 pos_b = pos;
                 finded = true;
-            } else if (finded){
+            } else if (finded && (! isnumber || pos == analyze.length() - 1)) {
                 len = pos - pos_b;
                 finded = false;
                 
@@ -81,33 +79,30 @@ FtimeStamps getOriginalData() {
             }
         }
         
-        if (timestamps[0] == timestamps[1] == timestamps[2] == 0) {
-            continue;
-        }
-        
         for (auto i : timestamps) {
-            swich (i) {
+            cout << i << endl;
             if (i == 0) {
                 goto ANALYZE_END;
-            } else if (i == 1844674407370955161) {
+            } else if (i >= 99999999999999) {
                 goto ANALYZE_END;
             }
         }
                 
         for (size_t i = 0; i < 3; i++) {
-            swich (i) {
+            switch (i) {
             case 0:
                 Fdata.start_time_stamps.push_back(timestamps[i]);
                 break;
             case 1:
                 Fdata.vsync_time_stamps.push_back(timestamps[i]);
                 break;
-            case 2
+            case 2:
                 Fdata.end_time_stamps.push_back(timestamps[i]);
             }
         }
-        
+
         ANALYZE_END:
+        continue;
     }
     
     system("dumpsys SurfaceFlinger --latency-clear > /dev/null 2>&1");

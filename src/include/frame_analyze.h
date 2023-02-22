@@ -3,6 +3,7 @@
 #include <vector>
 
 using std::vector;
+using std::string;
 
 struct FtimeStamps {
     vector <unsigned long long>start_time_stamps;
