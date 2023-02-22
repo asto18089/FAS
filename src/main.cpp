@@ -9,6 +9,7 @@
 #include "include/cpufreq.h"
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
+#include "include/close_others.h"
 
 using std::cout;
 using std::endl;
@@ -17,8 +18,6 @@ using std::ifstream;
 using std::string;
 using namespace std::chrono;
 using namespace std::this_thread;
-
-const char *PROFILE_LOCATION = "/sdcard/Android/FAS/FAS.conf";
 
 void bound2little() {
     cpu_set_t mask;
@@ -36,6 +35,7 @@ int main() {
     bound2little();
     
     Cpufreq cpu_controller;
+    start_close_others();
     
     LOOP: // 主循环线程，死循环
     while (getSurfaceview().empty()) {

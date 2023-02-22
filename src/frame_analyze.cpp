@@ -33,11 +33,15 @@ string getSurfaceview() {
     while (fgets (buffer, sizeof(buffer) , game) ) {
         string result = buffer;
         if (result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos) {
+            pclose(game);
+            
             result.pop_back();
             return result;
         } // 安卓11以及以上用的方法
         
         if (result.find("SurfaceView -") != string::npos) {
+            pclose(game);
+        
             result.pop_back();
             return result;
         } // 安卓11以下的方法
@@ -45,6 +49,7 @@ string getSurfaceview() {
         /*安卓9以下的方法还不一样，不过没有必要适配*/
     }
     
+    pclose(game);
     return string();
 }
 
@@ -118,7 +123,6 @@ FtimeStamps getOriginalData() {
         continue;
     }
     
-    //system("dumpsys SurfaceFlinger --latency-clear > /dev/null 2>&1");
-    
+    pclose(dumpsys);
     return Fdata;
 }

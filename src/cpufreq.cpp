@@ -20,7 +20,6 @@ using std::string;
 
 Cpufreq::Cpufreq() {
     kpi = 0;
-    
     getFreq();
 }
 
