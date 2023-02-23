@@ -158,3 +158,7 @@ void Cpufreq::limit(const int& n) {
     thread t_cpu_writer(cpu_writer, ref(*this));
     t_cpu_writer.detach();
 }
+
+void Cpufreq::set_scaling(const short& n) {
+    scaling = n;
+}

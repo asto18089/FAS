@@ -36,6 +36,25 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
     
     first_3_avg_frametime = (*vsysc_frametime.begin() + *(vsysc_frametime.begin() + 1)) / 2;
     
+    // 获得标准framtime
+    const long long frametime_30fps = 1000 * 1000 * 1000 / 30;
+    const long long frametime_60fps = 1000 * 1000 * 1000 / 60;
+    const long long frametime_90fps = 1000 * 1000 * 1000 / 90;
+    const long long frametime_120fps = 1000 * 1000 * 1000 / 120;
+    const long long frametime_144fps = 1000 * 1000 * 1000 / 144;
+    
+    if (first_3_avg_frametime < frametime_30fps * 1.1) {
+        first_3_avg_frametime = frametime_30fps;
+    } else if (first_3_avg_frametime < frametime_60fps * 1.1) {
+        first_3_avg_frametime = frametime_60fps;
+    } else if (first_3_avg_frametime < frametime_90fps * 1.1) {
+        first_3_avg_frametime = frametime_90fps;
+    } else if (first_3_avg_frametime < frametime_120fps * 1.1) {
+        first_3_avg_frametime = frametime_120fps;
+    } else if (first_3_avg_frametime < frametime_144fps * 1.1) {
+        first_3_avg_frametime = frametime_144fps;
+    }
+    
     //cout << first_3_avg_frametime << endl;
     
     for (auto &i : vsysc_frametime) {
@@ -43,7 +62,7 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
             continue;
         }
         
-        if (i > 1.3 * first_3_avg_frametime) {
+        if (i > 1.5 * first_3_avg_frametime) {
             Jdata.big_jank_count++;
             for (auto &it : vsysc_frametime) {
                 if ((i + it) / 2 < 1.3 * first_3_avg_frametime) {
