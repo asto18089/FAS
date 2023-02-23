@@ -38,24 +38,28 @@ jank_data analyzeFrameData(const FtimeStamps& Fdata) {
     
     //cout << first_3_avg_frametime << endl;
     
-    for (auto i : vsysc_frametime) {
+    for (auto &i : vsysc_frametime) {
         if (i > 1000000000) {
             continue;
         }
         
         if (i > 1.3 * first_3_avg_frametime) {
             Jdata.big_jank_count++;
-            for (auto it : vsysc_frametime) {
+            for (auto &it : vsysc_frametime) {
                 if ((i + it) / 2 < 1.3 * first_3_avg_frametime) {
                     Jdata.big_jank_count--;
+                    i = first_3_avg_frametime;
+                    it = first_3_avg_frametime;
                     break;
                 }
             }
         } else if (i > 1.1 * first_3_avg_frametime) {
             Jdata.jank_count++;
-            for (auto it : vsysc_frametime) {
+            for (auto &it : vsysc_frametime) {
                 if ((i + it) / 2 < 1.1 * first_3_avg_frametime) {
                     Jdata.jank_count--;
+                    i = first_3_avg_frametime;
+                    it = first_3_avg_frametime;
                     break;
                 }
             }

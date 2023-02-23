@@ -1,0 +1,6 @@
+id=FAS
+name=Frame aware scheduling
+version=v0.1
+versionCode=1
+author=shadow3
+description=FAS，完全根据帧反馈的调度

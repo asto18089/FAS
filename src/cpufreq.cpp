@@ -20,6 +20,7 @@ using std::string;
 
 Cpufreq::Cpufreq() {
     kpi = 0;
+    scaling = 2;
     getFreq();
 }
 
@@ -89,11 +90,11 @@ void Cpufreq::show_big_table() {
 void Cpufreq::Cpu_big_limit() {
     static int tmp(666), target(999);
     
-    if (kpi - kpi_min - 2 < 0) {
+    if (kpi - kpi_min - scaling < 0) {
         target = 0;
     }
-    else if (kpi - kpi_min - 2 <= big_cpu_table.size()) {
-        target = kpi - kpi_min - 2;
+    else if (kpi - kpi_min - scaling <= big_cpu_table.size()) {
+        target = kpi - kpi_min - scaling;
     } else {
         target = big_cpu_table.size();
     }

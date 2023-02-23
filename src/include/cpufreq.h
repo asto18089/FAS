@@ -31,6 +31,7 @@ class Cpufreq {
     vector<unsigned long> big_cpu_table;
     int kpi;
     int kpi_min;
+    int scaling;
     void getFreq();
     void Cpu_big_limit();
     void Cpu_middle_limit();
