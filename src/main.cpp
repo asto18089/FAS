@@ -52,7 +52,7 @@ int main() {
     
     if (jdata.big_jank_count > 2) {
         cpu_controller.limit(2);
-    } else if (jdata.jank_count > 3) {
+    } else if (jdata.jank_count > 5) {
         cpu_controller.limit(1);
     } else {
         cpu_controller.limit(-1);

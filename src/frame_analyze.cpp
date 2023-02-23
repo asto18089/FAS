@@ -33,14 +33,12 @@ string getSurfaceview() {
     while (fgets (buffer, sizeof(buffer) , game) ) {
         string result = buffer;
         if (result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos) {
-            pclose(game);
             
             result.pop_back();
             return result;
         } // 安卓11以及以上用的方法
         
         if (result.find("SurfaceView -") != string::npos) {
-            pclose(game);
         
             result.pop_back();
             return result;
@@ -130,6 +128,5 @@ FtimeStamps getOriginalData() {
         continue;
     }
     
-    pclose(dumpsys);
     return Fdata;
 }
