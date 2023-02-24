@@ -53,14 +53,8 @@ string getSurfaceview() {
 
 FtimeStamps getOriginalData() {
     FtimeStamps Fdata;
-    static string last_Surfaceview;
     
-    if (last_Surfaceview != getSurfaceview()) {
-        last_Surfaceview = getSurfaceview();
-        system("dumpsys SurfaceFlinger --latency-clear > /dev/null 2>&1");
-    }
-    
-    string cmd = "dumpsys SurfaceFlinger --latency \'" + last_Surfaceview + "\'";
+    string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\'";
     FILE *dumpsys = popen(cmd.c_str(), "r");
     
     char buffer[1024] = {0};

@@ -35,7 +35,7 @@ int main() {
     bound2little();
     
     Cpufreq cpu_controller;
-    cpu_controller.set_scaling(3);
+    cpu_controller.set_scaling(2);
     
     start_close_others();
     
@@ -50,15 +50,17 @@ int main() {
     /*cout << "Jank count" << jdata.jank_count << endl;
     cout << "Big Jank count" << jdata.big_jank_count << endl;*/
     
-    if (jdata.big_jank_count > 2) {
+    if (jdata.big_jank_count > 1) {
         cpu_controller.limit(2);
-    } else if (jdata.jank_count > 5) {
+    } else if (jdata.jank_count > 1) {
         cpu_controller.limit(1);
-    } else {
+    } else if (jdata.jank_count > 0) {
         cpu_controller.limit(-1);
+    } else {
+        cpu_controller.limit(-2);
     }
     
-    sleep_for(milliseconds(350));
+    sleep_for(milliseconds(100));
     
     goto LOOP; // LOOP never ends
 }
