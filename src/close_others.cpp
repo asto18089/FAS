@@ -3,6 +3,7 @@
 #include <sys/prctl.h>
 
 #include "include/close_others.h"
+#include "include/lockvalue.h"
 
 using std::thread;
 

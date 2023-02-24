@@ -9,6 +9,7 @@
 #include <string>
 
 #include "include/cpufreq.h"
+#include "include/lockvalue.h"
 
 using std::cout;
 using std::endl;
