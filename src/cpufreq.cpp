@@ -72,7 +72,7 @@ void Cpufreq::getFreq()
         if (big_cpu_table[kpi_min + 1] < middle_cpu_table[0])
             break;
     }
-    kpi_min = -1 * kpi_min;
+    kpi_min = -kpi_min;
 }
 
 void Cpufreq::show_middle_table()
@@ -107,7 +107,7 @@ void Cpufreq::Cpu_big_limit()
         Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq", big_cpu_table[target]);
     }
     tmp = target;
-    // cout << "大核taget："<< *target <<  "kpi:" << kpi << endl;
+    // cout << "大核target："<< *target <<  "kpi:" << kpi << endl;
 }
 
 void Cpufreq::Cpu_middle_limit()
@@ -128,15 +128,7 @@ void Cpufreq::Cpu_middle_limit()
         Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", middle_cpu_table[target]);
     }
     tmp = target;
-    // cout << "中核taget："<< *target <<  "kpi:" << kpi << endl;
-}
-
-void Cpufreq::cpu_writer(Cpufreq &device)
-{
-    prctl(PR_SET_NAME, "Cpufreq writer");
-
-    device.Cpu_middle_limit();
-    device.Cpu_big_limit();
+    // cout << "中核target：" << *target <<  "kpi:" << kpi << endl;
 }
 
 void Cpufreq::limit_clear()
@@ -162,9 +154,8 @@ void Cpufreq::limit(const int &n)
         else
             kpi = kpi_min;
     }
-
-    thread t_cpu_writer(cpu_writer, ref(*this));
-    t_cpu_writer.detach();
+    Cpu_middle_limit();
+    Cpu_big_limit();
 }
 
 void Cpufreq::set_scaling(const short &n)
