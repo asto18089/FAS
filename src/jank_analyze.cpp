@@ -20,7 +20,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         return Jdata;
     }
 
-    // const unsigned long long MOVIE_FRAME_TIME = 1000 * 1000 * 1000 / 24;
+    // const unsigned long MOVIE_FRAME_TIME = 1000 * 1000 * 1000 / 24;
 
     const auto &vsync_begin = Fdata.vsync_time_stamps.begin();
     const auto &vsync_end = Fdata.vsync_time_stamps.end();
@@ -29,8 +29,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         cout << i << endl;
     }*/
 
-    vector<unsigned long long> vsysc_frametime;
-    static unsigned long long first_3_avg_frametime;
+    vector<unsigned long> vsysc_frametime;
+    static unsigned long first_3_avg_frametime;
 
     for (auto i = vsync_begin + 1; i < vsync_end - 1; i++)
     {
@@ -41,11 +41,11 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     first_3_avg_frametime = (*vsysc_frametime.begin() + *(vsysc_frametime.begin() + 1)) / 2;
 
     // 获得标准framtime
-    const long long frametime_30fps = 1000 * 1000 * 1000 / 30;
-    const long long frametime_60fps = 1000 * 1000 * 1000 / 60;
-    const long long frametime_90fps = 1000 * 1000 * 1000 / 90;
-    const long long frametime_120fps = 1000 * 1000 * 1000 / 120;
-    const long long frametime_144fps = 1000 * 1000 * 1000 / 144;
+    const long frametime_30fps = 1000 * 1000 * 1000 / 30;
+    const long frametime_60fps = 1000 * 1000 * 1000 / 60;
+    const long frametime_90fps = 1000 * 1000 * 1000 / 90;
+    const long frametime_120fps = 1000 * 1000 * 1000 / 120;
+    const long frametime_144fps = 1000 * 1000 * 1000 / 144;
 
     if (first_3_avg_frametime > frametime_30fps * 0.9)
         first_3_avg_frametime = frametime_30fps;

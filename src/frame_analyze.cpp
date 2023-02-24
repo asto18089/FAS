@@ -67,7 +67,7 @@ FtimeStamps getOriginalData()
     while (fgets(buffer, sizeof(buffer), dumpsys))
     {
         static string analyze;
-        static unsigned long long timestamps[3] = {0};
+        static unsigned long timestamps[3] = {0};
         analyze = buffer;
         analyze.pop_back();
 
