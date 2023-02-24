@@ -21,8 +21,6 @@ using std::vector;
 
 Cpufreq::Cpufreq()
 {
-    kpi = 0;
-    scaling = 2;
     getFreq();
 }
 
