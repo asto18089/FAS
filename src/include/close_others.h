@@ -1,5 +1,11 @@
 #pragma once
 
+#include <sys/stat.h>
+#include <fstream>
+
+using std::ios;
+using std::ofstream;
+
 void start_close_others();
 
 // Edit and Lock a file
