@@ -50,3 +50,4 @@ vector <unsigned int[4]>get_flashrate_list() {
         result.push_back(data);
     }
 }
+
