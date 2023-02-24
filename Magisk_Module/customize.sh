@@ -9,7 +9,7 @@ echo "请等待…"
 # no uperf
 if [ $(pidof uperf) != "" ]; then
     echo "Uperf detected, please remove."
-    echo "检测到uperf，请移除"abort
+    echo "检测到uperf, 请移除"abort
 fi
 
 # permission
