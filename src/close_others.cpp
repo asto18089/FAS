@@ -1,15 +1,9 @@
 #include <unistd.h>
 #include <thread>
-#include <chrono>
 #include <sys/prctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fstream>
 
 #include "include/close_others.h"
 
-using std::ios;
-using std::ofstream;
 using std::thread;
 
 static void close_others()

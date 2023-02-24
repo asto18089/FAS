@@ -40,7 +40,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
     first_3_avg_frametime = (*vsync_frametime.cbegin() + *(vsync_frametime.cbegin() + 1)) / 2;
 
-    // 获得标准framtime
+    // 获得标准frametime
     constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;
     constexpr long frametime_60fps = 1000 * 1000 * 1000 / 60;
     constexpr long frametime_90fps = 1000 * 1000 * 1000 / 90;
@@ -60,7 +60,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
     for (const auto &i : vsync_frametime)
     {
-        cout << i << endl;
+        cout << i << '\n';
         if (i > 10000000000)
             continue;
         if (i >= first_3_avg_frametime * 2)
@@ -70,6 +70,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         if (i <= first_3_avg_frametime * 2 / 3)
             Jdata.jank_count--;
     }
+    cout << endl;
 
     return Jdata;
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>
 
@@ -16,12 +15,8 @@ bool Lockvalue(const char *location, T value)
     chmod(location, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IWOTH | S_IROTH);
     ofstream fd(location, ios::out | ios::trunc);
     if (!fd)
-    {
-        fd.close();
         return false;
-    }
     fd << value;
-    fd.close();
     chmod(location, S_IRUSR | S_IRGRP | S_IROTH);
     return true;
 }
@@ -36,7 +31,6 @@ class Cpufreq
     void getFreq();
     void Cpu_big_limit();
     void Cpu_middle_limit();
-    static void cpu_writer(Cpufreq &device);
 
 public:
     Cpufreq();

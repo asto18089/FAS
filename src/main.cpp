@@ -13,8 +13,6 @@
 
 using std::cout;
 using std::endl;
-using std::ifstream;
-using std::ofstream;
 using std::string;
 using namespace std::chrono;
 using namespace std::this_thread;
