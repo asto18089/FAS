@@ -60,6 +60,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
     for (const auto &i : vsync_frametime)
     {
+        cout << i << endl;
         if (i > 10000000000)
             continue;
         if (i >= first_3_avg_frametime * 2)
