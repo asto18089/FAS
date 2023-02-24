@@ -9,8 +9,6 @@ using std::endl;
 using std::vector;
 using std::string;
 
-static 
-
 vector <unsigned int[4]>get_flashrate_list() {
     vector <unsigned int[4]>result;
     static unsigned int data[4];
