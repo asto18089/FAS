@@ -29,25 +29,20 @@ void Cpufreq::getFreq()
 { // 读取频率表
     ifstream list;
     string freq;
-    unsigned short pos = 0;
+    size_t pos = 0;
 
     list.open("/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies"); // cpu4-6
+    if (!list)
+        list.open("/sys/devices/system/cpu/cpufreq/policy3/scaling_available_frequencies"); // cpu3-6
     getline(list, freq);
     list.close();
-
-    if (!list)
-    {
-        list.open("/sys/devices/system/cpu/cpufreq/policy3/scaling_available_frequencies");
-        getline(list, freq);
-        list.close();
-    }
 
     freq.pop_back();
     for (auto i = 0; i < freq.length() - 1; i++)
     {
         if (freq[i] == ' ')
         {
-            middle_cpu_table.push_back(atoi(freq.substr(pos, i - pos).c_str()));
+            middle_cpu_table.push_back(atol(freq.substr(pos, i - pos).c_str()));
             pos = i + 1;
         }
     }
@@ -58,11 +53,11 @@ void Cpufreq::getFreq()
 
     freq.pop_back();
     pos = 0;
-    for (auto i = 0; i < freq.length() - 1; i++)
+    for (size_t i = 0; i < freq.length() - 1; i++)
     {
         if (freq[i] == ' ')
         {
-            big_cpu_table.push_back(atoi(freq.substr(pos, i - pos).c_str()));
+            big_cpu_table.push_back(atol(freq.substr(pos, i - pos).c_str()));
             pos = i + 1;
         }
     }
@@ -82,21 +77,22 @@ void Cpufreq::getFreq()
 
 void Cpufreq::show_middle_table()
 {
-    for (auto i : middle_cpu_table)
+    for (const auto &i : middle_cpu_table)
         cout << i << ' ';
     cout << endl;
 }
 
 void Cpufreq::show_big_table()
 {
-    for (auto i : big_cpu_table)
+    for (const auto & i : big_cpu_table)
         cout << i << ' ';
     cout << endl;
 }
 
 void Cpufreq::Cpu_big_limit()
 {
-    static int tmp(666), target(999);
+    static int tmp = 666;
+    static int target = 999;
 
     if (kpi - kpi_min - scaling < 0)
         target = 0;
@@ -116,7 +112,8 @@ void Cpufreq::Cpu_big_limit()
 
 void Cpufreq::Cpu_middle_limit()
 {
-    static int tmp(666), target(999);
+    static int tmp = 666;
+    static int target = 999;
 
     if (kpi < 0)
         target = 0;
