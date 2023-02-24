@@ -6,6 +6,7 @@
 #include <thread>
 #include <sys/prctl.h>
 #include <chrono>
+#include <charconv>
 
 #include "include/frame_analyze.h"
 
@@ -93,8 +94,8 @@ FtimeStamps getOriginalData()
             {
                 len = pos - pos_b + 1;
                 found = false;
-
-                timestamps[i] = atol(analyze.substr(pos_b, len).c_str());
+                
+                std::from_chars(analyze.c_str() + pos_b, analyze.c_str() + pos_b + len, timestamps[i]);
                 i++;
             }
         }
@@ -116,7 +117,7 @@ FtimeStamps getOriginalData()
         Fdata.vsync_time_stamps.push_back(timestamps[1]);
         Fdata.end_time_stamps.push_back(timestamps[2]);
 
-        analyze_last = analyze;
+        analyze_last = std::move(analyze);
 
     ANALYZE_END:
         continue;

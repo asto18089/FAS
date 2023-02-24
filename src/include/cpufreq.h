@@ -12,19 +12,19 @@ class Cpufreq
 {
     vector<unsigned long> middle_cpu_table;
     vector<unsigned long> big_cpu_table;
-    int kpi;
+    int kpi = 0;
     int kpi_min;
-    short scaling;
+    short scaling = 2;
     void getFreq();
     void Cpu_big_limit();
     void Cpu_middle_limit();
 
 public:
     Cpufreq();
-    Cpufreq(const Cpufreq &other) = delete; // dont copy this
+    Cpufreq(const Cpufreq &) = delete; // dont copy this
     void show_middle_table();
     void show_big_table();
-    void limit(const int &n);
+    void limit(const int &);
     void limit_clear();
-    void set_scaling(const short &n);
+    void set_scaling(const short &);
 };
