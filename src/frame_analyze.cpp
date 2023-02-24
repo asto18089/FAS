@@ -79,20 +79,20 @@ FtimeStamps getOriginalData()
             continue;
         }
 
-        static bool finded = false;
+        static bool found = false;
         for (size_t pos = 0, len = 0, i = 0, pos_b = 0; pos < analyze.length(); pos++)
         {
-            const bool &isnumber = (analyze[pos] <= '9' && analyze[pos] >= '0');
+            const bool isnumber = (analyze[pos] <= '9' && analyze[pos] >= '0');
 
-            if (!finded && isnumber)
+            if (!found && isnumber)
             {
                 pos_b = pos;
-                finded = true;
+                found = true;
             }
-            else if (finded && (!isnumber || pos == analyze.length() - 1))
+            else if (found && (!isnumber || pos == analyze.length() - 1))
             {
                 len = pos - pos_b + 1;
-                finded = false;
+                found = false;
 
                 timestamps[i] = atol(analyze.substr(pos_b, len).c_str());
                 i++;
@@ -112,20 +112,9 @@ FtimeStamps getOriginalData()
                 goto ANALYZE_END;
         }
 
-        for (uint8_t i = 0; i < 3; i++)
-        {
-            switch (i)
-            {
-            case 0:
-                Fdata.start_time_stamps.push_back(timestamps[i]);
-                break;
-            case 1:
-                Fdata.vsync_time_stamps.push_back(timestamps[i]);
-                break;
-            case 2:
-                Fdata.end_time_stamps.push_back(timestamps[i]);
-            }
-        }
+        Fdata.start_time_stamps.push_back(timestamps[0]);
+        Fdata.vsync_time_stamps.push_back(timestamps[1]);
+        Fdata.end_time_stamps.push_back(timestamps[2]);
 
         analyze_last = analyze;
 

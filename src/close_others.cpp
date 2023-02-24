@@ -12,19 +12,6 @@ using std::ios;
 using std::ofstream;
 using std::thread;
 
-// Edit and Lock a file
-template <typename T>
-bool Lockvalue(const char *location, T value)
-{
-    chmod(location, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IWOTH | S_IROTH);
-    ofstream fd(location, ios::out | ios::trunc);
-    if (!fd)
-        return false;
-    fd << value;
-    chmod(location, S_IRUSR | S_IRGRP | S_IROTH);
-    return true;
-}
-
 static void close_others()
 {
     prctl(PR_SET_NAME, "close_others");

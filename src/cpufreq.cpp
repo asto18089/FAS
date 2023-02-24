@@ -112,7 +112,8 @@ void Cpufreq::Cpu_big_limit()
 
 void Cpufreq::Cpu_middle_limit()
 {
-    static int tmp(666), target(999);
+    static int tmp = 666;
+    static int target = 999;
 
     if (kpi < 0)
         target = 0;

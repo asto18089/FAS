@@ -22,23 +22,23 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
     // const unsigned long MOVIE_FRAME_TIME = 1000 * 1000 * 1000 / 24;
 
-    const auto &vsync_begin = Fdata.vsync_time_stamps.begin();
-    const auto &vsync_end = Fdata.vsync_time_stamps.end();
+    auto vsync_begin = Fdata.vsync_time_stamps.cbegin();
+    auto vsync_end = Fdata.vsync_time_stamps.cend();
 
     /*for (auto i : Fdata.vsync_time_stamps) {
         cout << i << endl;
     }*/
 
-    vector<unsigned long> vsysc_frametime;
+    vector<unsigned long> vsync_frametime;
     static unsigned long first_3_avg_frametime;
 
     for (auto i = vsync_begin + 1; i < vsync_end - 1; i++)
     {
         if (*i > *(i - 1))
-            vsysc_frametime.push_back(*i - *(i - 1));
+            vsync_frametime.push_back(*i - *(i - 1));
     }
 
-    first_3_avg_frametime = (*vsysc_frametime.begin() + *(vsysc_frametime.begin() + 1)) / 2;
+    first_3_avg_frametime = (*vsync_frametime.cbegin() + *(vsync_frametime.cbegin() + 1)) / 2;
 
     // 获得标准framtime
     constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;
@@ -58,7 +58,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     else if (first_3_avg_frametime > frametime_144fps * 9 / 10)
         first_3_avg_frametime = frametime_144fps;
 
-    for (const auto &i : vsysc_frametime)
+    for (const auto &i : vsync_frametime)
     {
         if (i > 10000000000)
             continue;
