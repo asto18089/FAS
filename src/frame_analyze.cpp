@@ -79,7 +79,7 @@ FtimeStamps getOriginalData()
             continue;
         }
 
-        static bool finded(false);
+        static bool finded = false;
         for (size_t pos = 0, len = 0, i = 0, pos_b = 0; pos < analyze.length(); pos++)
         {
             const bool &isnumber = (analyze[pos] <= '9' && analyze[pos] >= '0');
@@ -99,7 +99,7 @@ FtimeStamps getOriginalData()
             }
         }
 
-        for (auto i : timestamps)
+        for (const auto &i : timestamps)
         {
             if (i == 0)
             {
@@ -112,7 +112,7 @@ FtimeStamps getOriginalData()
                 goto ANALYZE_END;
         }
 
-        for (size_t i = 0; i < 3; i++)
+        for (uint8_t i = 0; i < 3; i++)
         {
             switch (i)
             {

@@ -58,7 +58,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     else if (first_3_avg_frametime > frametime_144fps * 9 / 10)
         first_3_avg_frametime = frametime_144fps;
 
-    for (auto &i : vsysc_frametime)
+    for (const auto &i : vsysc_frametime)
     {
         if (i > 10000000000)
             continue;
