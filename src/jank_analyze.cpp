@@ -41,30 +41,30 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     first_3_avg_frametime = (*vsysc_frametime.begin() + *(vsysc_frametime.begin() + 1)) / 2;
 
     // 获得标准framtime
-    const long frametime_30fps = 1000 * 1000 * 1000 / 30;
-    const long frametime_60fps = 1000 * 1000 * 1000 / 60;
-    const long frametime_90fps = 1000 * 1000 * 1000 / 90;
-    const long frametime_120fps = 1000 * 1000 * 1000 / 120;
-    const long frametime_144fps = 1000 * 1000 * 1000 / 144;
+    constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;
+    constexpr long frametime_60fps = 1000 * 1000 * 1000 / 60;
+    constexpr long frametime_90fps = 1000 * 1000 * 1000 / 90;
+    constexpr long frametime_120fps = 1000 * 1000 * 1000 / 120;
+    constexpr long frametime_144fps = 1000 * 1000 * 1000 / 144;
 
-    if (first_3_avg_frametime > frametime_30fps * 0.9)
+    if (first_3_avg_frametime > frametime_30fps * 9 / 10)
         first_3_avg_frametime = frametime_30fps;
-    else if (first_3_avg_frametime > frametime_60fps * 0.9)
+    else if (first_3_avg_frametime > frametime_60fps * 9 / 10)
         first_3_avg_frametime = frametime_60fps;
-    else if (first_3_avg_frametime > frametime_90fps * 0.9)
+    else if (first_3_avg_frametime > frametime_90fps * 9 / 10)
         first_3_avg_frametime = frametime_90fps;
-    else if (first_3_avg_frametime > frametime_120fps * 0.9)
+    else if (first_3_avg_frametime > frametime_120fps * 9 / 10)
         first_3_avg_frametime = frametime_120fps;
-    else if (first_3_avg_frametime > frametime_144fps * 0.9)
+    else if (first_3_avg_frametime > frametime_144fps * 9 / 10)
         first_3_avg_frametime = frametime_144fps;
 
     for (auto &i : vsysc_frametime)
     {
         if (i > 10000000000)
             continue;
-        if (i >= 2.0 * first_3_avg_frametime)
+        if (i >= first_3_avg_frametime * 2)
             Jdata.big_jank_count++;
-        else if (i >= 1.1 * first_3_avg_frametime)
+        else if (i >= first_3_avg_frametime * 11 / 10)
             Jdata.jank_count++;
         if (i <= first_3_avg_frametime * 2 / 3)
             Jdata.jank_count--;

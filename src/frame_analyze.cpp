@@ -94,7 +94,7 @@ FtimeStamps getOriginalData()
                 len = pos - pos_b + 1;
                 finded = false;
 
-                timestamps[i] = atoll(analyze.substr(pos_b, len).c_str());
+                timestamps[i] = atol(analyze.substr(pos_b, len).c_str());
                 i++;
             }
         }

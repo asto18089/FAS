@@ -19,7 +19,7 @@ using std::string;
 using namespace std::chrono;
 using namespace std::this_thread;
 
-void bound2little()
+static void bound2little()
 {
     cpu_set_t mask;
     CPU_ZERO(&mask);
