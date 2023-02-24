@@ -7,6 +7,7 @@
 #include <chrono>
 #include <stdlib.h>
 #include <string>
+#include <charconv>
 
 #include "include/cpufreq.h"
 #include "include/lockvalue.h"
@@ -41,7 +42,9 @@ void Cpufreq::getFreq()
     {
         if (freq[i] == ' ')
         {
-            middle_cpu_table.push_back(atol(freq.substr(pos, i - pos).c_str()));
+            unsigned long cur;
+            std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
+            middle_cpu_table.push_back(cur);
             pos = i + 1;
         }
     }
@@ -56,7 +59,9 @@ void Cpufreq::getFreq()
     {
         if (freq[i] == ' ')
         {
-            big_cpu_table.push_back(atol(freq.substr(pos, i - pos).c_str()));
+            unsigned long cur;
+            std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
+            big_cpu_table.push_back(cur);
             pos = i + 1;
         }
     }
@@ -83,7 +88,7 @@ void Cpufreq::show_middle_table()
 
 void Cpufreq::show_big_table()
 {
-    for (const auto & i : big_cpu_table)
+    for (const auto &i : big_cpu_table)
         cout << i << ' ';
     cout << endl;
 }
