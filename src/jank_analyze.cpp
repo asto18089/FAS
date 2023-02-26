@@ -20,14 +20,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         return Jdata;
     }
 
-    // const unsigned long MOVIE_FRAME_TIME = 1000 * 1000 * 1000 / 24;
-
     auto vsync_begin = Fdata.vsync_time_stamps.cbegin();
     auto vsync_end = Fdata.vsync_time_stamps.cend();
-
-    /*for (auto i : Fdata.vsync_time_stamps) {
-        cout << i << endl;
-    }*/
 
     vector<unsigned long> vsync_frametime;
     static unsigned long first_3_avg_frametime;
