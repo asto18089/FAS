@@ -96,9 +96,9 @@ FtimeStamps getOriginalData()
                 goto ANALYZE_END;
         }
 
-        Fdata.start_time_stamps.push_back(timestamps[0]);
-        Fdata.vsync_time_stamps.push_back(timestamps[1]);
-        Fdata.end_time_stamps.push_back(timestamps[2]);
+        Fdata.start_time_stamps.emplace_back(timestamps[0]);
+        Fdata.vsync_time_stamps.emplace_back(timestamps[1]);
+        Fdata.end_time_stamps.emplace_back(timestamps[2]);
 
         analyze_last = std::move(analyze);
 
