@@ -47,7 +47,6 @@ int main()
         }
 
         jank_data jdata = analyzeFrameData(getOriginalData());
-        cout << jdata.nice() << endl;
             
         sleep_for(milliseconds(100));
         
