@@ -3,9 +3,11 @@
 struct jank_data
 {
 /* NOT : needed out of time
-   OOT : others of frametime*/
+   OOT : out of NOT
+   LOT : less than NOT*/
     int NOT = 0;
     int OOT = 0;
+    int LOT = 0;
 
     float nice() const;
 };
