@@ -5,7 +5,7 @@
 
 string getSurfaceview()
 {
-    FILE *game = popen("dumpsys SurfaceFlinger --list", "r");
+    FILE *game = popen("dumpsys SurfaceFlinger --list 2>/dev/null", "r");
 
     char buffer[1024] = {0};
 
@@ -47,8 +47,16 @@ FtimeStamps getOriginalData()
 {
     FtimeStamps Fdata;
 
-    string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\'";
+    string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\' " + "2>/dev/null";
     FILE *dumpsys = popen(cmd.c_str(), "r");
+    
+    if (dumpsys == nullptr)
+    {
+        perror("Failed");
+        pclose(dumpsys);
+        
+        return Fdata;
+    }
 
     char buffer[1024] = {0};
     static string analyze, analyze_last, analyze_last_t;
