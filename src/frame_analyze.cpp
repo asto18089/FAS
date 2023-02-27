@@ -92,7 +92,7 @@ FtimeStamps getOriginalData()
                 Fdata.end_time_stamps.clear();
                 goto ANALYZE_END;
             }
-            else if (i >= 99999999999999)
+            else if (i >= 1000 * 1000 * 1000)
                 goto ANALYZE_END;
         }
 

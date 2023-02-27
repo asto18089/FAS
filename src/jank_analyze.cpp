@@ -8,6 +8,14 @@ using std::cout;
 using std::endl;
 using std::vector;
 
+/* 让游戏始终运行在刚好(差点)满足需要的频率上
+   需要让frametime始终保持轻微的超时
+   如果framtime小于该(需要)超时后的frametime
+   则说明性能余量过多
+   如果framtime大于该frametime
+   则说明需要更多性能
+   如此可得到游戏运行刚好需要的频率 */
+
 jank_data analyzeFrameData(const FtimeStamps &Fdata)
 {
     jank_data Jdata;
@@ -23,7 +31,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     auto start_end = Fdata.start_time_stamps.cend();
 
     vector<unsigned long> start_frametime;
-    static unsigned long first_3_avg_frametime;
+    static unsigned long standard_frame_time;
 
     for (auto i = start_begin + 1; i < start_end - 1; i++)
     {
@@ -31,7 +39,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             start_frametime.push_back(*i - *(i - 1));
     }
 
-    first_3_avg_frametime = (*start_frametime.cbegin() + *(start_frametime.cbegin() + 1)) / 2;
+    standard_frame_time = (*start_frametime.cbegin() + *(start_frametime.cbegin() + 1)) / 2;
 
     // 获得标准frametime
     constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;
@@ -40,23 +48,23 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     constexpr long frametime_120fps = 1000 * 1000 * 1000 / 120;
     constexpr long frametime_144fps = 1000 * 1000 * 1000 / 144;
 
-    if (first_3_avg_frametime > frametime_30fps * 9 / 10)
-        first_3_avg_frametime = frametime_30fps;
-    else if (first_3_avg_frametime > frametime_60fps * 9 / 10)
-        first_3_avg_frametime = frametime_60fps;
-    else if (first_3_avg_frametime > frametime_90fps * 9 / 10)
-        first_3_avg_frametime = frametime_90fps;
-    else if (first_3_avg_frametime > frametime_120fps * 9 / 10)
-        first_3_avg_frametime = frametime_120fps;
-    else if (first_3_avg_frametime > frametime_144fps * 9 / 10)
-        first_3_avg_frametime = frametime_144fps;
+    if (standard_frame_time > frametime_30fps * 9 / 10)
+        standard_frame_time = frametime_30fps;
+    else if (standard_frame_time > frametime_60fps * 9 / 10)
+        standard_frame_time = frametime_60fps;
+    else if (standard_frame_time > frametime_90fps * 9 / 10)
+        standard_frame_time = frametime_90fps;
+    else if (standard_frame_time > frametime_120fps * 9 / 10)
+        standard_frame_time = frametime_120fps;
+    else if (standard_frame_time > frametime_144fps * 9 / 10)
+        standard_frame_time = frametime_144fps;
 
     for (const auto &i : start_frametime)
     {
         cout << i << '\n';
-        if (i >= first_3_avg_frametime * 2)
+        if (i >= standard_frame_time * 2)
             Jdata.big_jank_count++;
-        else if (i >= first_3_avg_frametime * 11 / 10)
+        else if (i >= standard_frame_time * 11 / 10)
             Jdata.jank_count++;
     }
     cout << endl;
