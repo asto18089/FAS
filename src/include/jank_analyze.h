@@ -10,6 +10,7 @@ struct jank_data
     int LOT = 0;
 
     float nice() const;
+    bool odd() const;
 };
 
 jank_data analyzeFrameData(const FtimeStamps &Fdata);

@@ -21,17 +21,13 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     jank_data Jdata;
 
     if (Fdata.start_time_stamps.size() < 4)
-    {
-        Jdata.big_jank_count = 66;
-        Jdata.jank_count = 66;
         return Jdata;
-    }
 
     auto start_begin = Fdata.start_time_stamps.cbegin();
     auto start_end = Fdata.start_time_stamps.cend();
 
     vector<unsigned long> start_frametime;
-    static unsigned long standard_frametime，needed_frametime;
+    static unsigned long standard_frametime, needed_frametime;
 
     for (auto i = start_begin + 1; i < start_end - 1; i++)
     {
@@ -84,4 +80,9 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 float jank_data::nice() const
 {
     return this->NOT / (this->NOT + this->OOT + this->LOT);
+}
+
+bool jank_data::odd() const
+{
+    return (OOT > LOT);
 }
