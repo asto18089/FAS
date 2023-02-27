@@ -49,9 +49,9 @@ int main()
         cout << "Big Jank count" << jdata.big_jank_count << endl;*/
 
         if (jdata.big_jank_count > 1)
-            cpu_controller.limit(2);
+            cpu_controller.limit(jdata.big_jank_count * 2);
         else if (jdata.jank_count > 1)
-            cpu_controller.limit(1);
+            cpu_controller.limit(jdata.jank_count);
         else if (jdata.jank_count > 0)
             cpu_controller.limit(-1);
         else
