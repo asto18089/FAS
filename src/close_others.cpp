@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <unistd.h>
 #include <thread>
 #include <sys/prctl.h>
@@ -13,7 +14,7 @@ static void close_others()
 
     while (true)
     {
-        system("stop fpsgo");
+        std::system("stop fpsgo");
         Lockvalue("/sys/module/mtk_fpsgo/parameters/perfmgr_enable", 0);
         Lockvalue("/sys/kernel/fpsgo/common/fpsgo_enable", 0);
         Lockvalue("/sys/module/perfmgr/parameters/perfmgr_enable", 0);
