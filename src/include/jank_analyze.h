@@ -2,8 +2,12 @@
 
 struct jank_data
 {
-    short jank_count = 0;
-    short big_jank_count = 0;
+/* NOT : needed out of time
+   OOT : others of frametime*/
+    int NOT = 0;
+    int OOT = 0;
+
+    float nice() const;
 };
 
 jank_data analyzeFrameData(const FtimeStamps &Fdata);

@@ -71,3 +71,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
     return Jdata;
 }
+
+float jank_data::nice() const
+{
+    return this->NOT / (this->NOT + this->OOT);
+}
