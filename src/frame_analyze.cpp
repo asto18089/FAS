@@ -23,12 +23,16 @@ string getSurfaceview()
         if (result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos)
         {
             result.pop_back();
+            pclose(game);
+            
             return result;
         } // 安卓11以及以上用的方法
 
         if (result.find("SurfaceView -") != string::npos)
         {
             result.pop_back();
+            pclose(game);
+            
             return result;
         } // 安卓11以下的方法
 
@@ -109,5 +113,6 @@ FtimeStamps getOriginalData()
     
     analyze_last = std::move(analyze_last_t);
     
+    pclose(dumpsys);
     return Fdata;
 }
