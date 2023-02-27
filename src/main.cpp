@@ -29,8 +29,11 @@ static void bound2little()
 int main()
 {
     bound2little();
+    cout.sync_with_stdio(false);
+    cout << std::unitbuf;
 
     Cpufreq cpu_controller;
+    
     cpu_controller.set_scaling(2);
 
     start_close_others();
@@ -44,14 +47,19 @@ int main()
         }
 
         jank_data jdata = analyzeFrameData(getOriginalData());
-
-        if (jdata.nice() > 0.8)
-            continue;
-        else if (jdata.odd())
-            cpu_controller.limit(1);
-        else
-            cpu_controller.limit(-1);
-
+        cout << jdata.nice() << endl;
+            
         sleep_for(milliseconds(100));
+        
+        /*nice是超时帧占所有帧的百分率*/
+        
+        if (jdata.nice() >= 0.1 && jdata.nice() <= 0.12) // 掉帧刚刚好
+            continue;
+        else if (jdata.nice() <= 0.1) // 掉帧少了，有余量
+            cpu_controller.limit(-1);
+        else if (jdata.nice() < 0.18) // 掉帧多了，卡死
+            cpu_controller.limit(1);
+        else 
+            cpu_controller.limit(jdata.nice() * 10 + 1);
     }
 }

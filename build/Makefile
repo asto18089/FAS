@@ -4,6 +4,6 @@ CLANG = $(NDK)/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33
 FPSeas: ../src/*.cpp
 	$(CLANG) $(CPPFLAGS) $^ -o FAS
 	sstrip ./FAS; true
-	cp ./FAS ../Magisk_Module/FAS
+	cp -f ./FAS ../Magisk_Module/FAS
 clean:
 	rm -f FAS

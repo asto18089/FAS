@@ -9,7 +9,7 @@ using std::endl;
 using std::vector;
 
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
-   需要让frametime始终保持轻微的超时
+   需要让始终保持发生一定数量轻微的超时
    如果framtime小于该(需要)超时后的frametime
    则说明性能余量过多
    如果framtime大于该frametime
@@ -20,69 +20,56 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 {
     jank_data Jdata;
 
-    if (Fdata.start_time_stamps.size() < 4)
+    if (Fdata.vsync_time_stamps.size() < 4)
         return Jdata;
 
-    auto start_begin = Fdata.start_time_stamps.cbegin();
-    auto start_end = Fdata.start_time_stamps.cend();
+    auto vsync_begin = Fdata.vsync_time_stamps.cbegin();
+    auto vsync_end = Fdata.vsync_time_stamps.cend();
 
-    vector<unsigned long> start_frametime;
-    static unsigned long standard_frametime, needed_frametime;
+    vector<unsigned long> vsync_frametime;
+    static unsigned long standard_frametime;
 
-    for (auto i = start_begin + 1; i < start_end - 1; i++)
+    for (auto i = vsync_begin + 1; i < vsync_end - 1; i++)
     {
         if (*i > *(i - 1))
-            start_frametime.emplace_back(*i - *(i - 1));
+            vsync_frametime.emplace_back(*i - *(i - 1));
     }
 
-    standard_frametime = (*start_frametime.cbegin() + *(start_frametime.cbegin() + 1)) / 2;
+    standard_frametime = (*vsync_frametime.cbegin() + *(vsync_frametime.cbegin() + 1)) / 2;
 
     // 获得标准frametime
-    constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;
-    constexpr long n_frametime_30fps = 1000 * 1000 * 1000 / 27;
+    constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;  
     constexpr long frametime_60fps = 1000 * 1000 * 1000 / 60;
-    constexpr long n_frametime_60fps = 1000 * 1000 * 1000 / 57;
-    constexpr long frametime_90fps = 1000 * 1000 * 1000 / 90;
-    constexpr long n_frametime_90fps = 1000 * 1000 * 1000 / 87;
-    constexpr long frametime_120fps = 1000 * 1000 * 1000 / 120;
-    constexpr long n_frametime_120fps = 1000 * 1000 * 1000 / 116;
+    constexpr long frametime_90fps = 1000 * 1000 * 1000 / 90;   
+    constexpr long frametime_120fps = 1000 * 1000 * 1000 / 120;  
     constexpr long frametime_144fps = 1000 * 1000 * 1000 / 144;
-    constexpr long n_frametime_144fps = 1000 * 1000 * 1000 / 140;
 
     if (standard_frametime > frametime_30fps * 9 / 10)
-        needed_frametime = n_frametime_30fps;
+        standard_frametime = frametime_30fps;
     else if (standard_frametime > frametime_60fps * 9 / 10)
-        needed_frametime = n_frametime_60fps;
+        standard_frametime = frametime_60fps;
     else if (standard_frametime > frametime_90fps * 9 / 10)
-        needed_frametime = n_frametime_90fps;
+        standard_frametime = frametime_90fps;
     else if (standard_frametime > frametime_120fps * 9 / 10)
-        needed_frametime = n_frametime_120fps;
+        standard_frametime = frametime_120fps;
     else if (standard_frametime > frametime_144fps * 9 / 10)
-        needed_frametime = n_frametime_144fps;
+        standard_frametime = frametime_144fps;
         
 
-    for (const auto &i : start_frametime)
+    for (const auto &i : vsync_frametime)
     {
-        cout << i << '\n';
+        // cout << i << '\n';
         
-        if (i > needed_frametime)
+        if (i > standard_frametime)
             Jdata.OOT++;
-        else if (i < standard_frametime * 14 / 15)
-            Jdata.LOT++;
         else
-            Jdata.NOT++;
+            Jdata.LOT++;
     }
-    cout << endl;
 
     return Jdata;
 }
 
 float jank_data::nice() const
 {
-    return this->NOT / (this->NOT + this->OOT + this->LOT);
-}
-
-bool jank_data::odd() const
-{
-    return (OOT > LOT);
+    return (float)(this->OOT) / (float)(this->OOT + this->LOT);
 }

@@ -47,20 +47,21 @@ FtimeStamps getOriginalData()
     FILE *dumpsys = popen(cmd.c_str(), "r");
 
     char buffer[1024] = {0};
-    static string analyze_last;
+    static string analyze, analyze_last, analyze_last_t;
 
     while (std::fgets(buffer, sizeof(buffer), dumpsys))
     {
-        static string analyze;
         static unsigned long timestamps[3] = {0};
         analyze = buffer;
         analyze.pop_back();
 
-        if (analyze_last == analyze)
+        if (analyze_last == analyze && ! analyze_last.empty())
         {
             Fdata.start_time_stamps.clear();
             Fdata.vsync_time_stamps.clear();
             Fdata.end_time_stamps.clear();
+            
+            analyze_last = {};
             continue;
         }
 
@@ -99,12 +100,14 @@ FtimeStamps getOriginalData()
         Fdata.start_time_stamps.emplace_back(timestamps[0]);
         Fdata.vsync_time_stamps.emplace_back(timestamps[1]);
         Fdata.end_time_stamps.emplace_back(timestamps[2]);
-
-        analyze_last = std::move(analyze);
-
+        
+        analyze_last_t = std::move(analyze);
+        
     ANALYZE_END:
         continue;
     }
-
+    
+    analyze_last = std::move(analyze_last_t);
+    
     return Fdata;
 }
