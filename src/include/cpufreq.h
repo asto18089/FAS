@@ -1,11 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <sys/stat.h>
-#include <fstream>
 
-using std::ios;
-using std::ofstream;
 using std::vector;
 
 class Cpufreq

@@ -1,23 +1,7 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <stdlib.h>
-#include <unistd.h>
-#include <thread>
-#include <sys/prctl.h>
-#include <chrono>
+#include <cstdio>
 #include <charconv>
 
 #include "include/frame_analyze.h"
-
-using std::cout;
-using std::endl;
-using std::ref;
-using std::string;
-using std::thread;
-using std::vector;
-using namespace std::chrono;
-using namespace std::this_thread;
 
 string getSurfaceview()
 {
@@ -65,7 +49,7 @@ FtimeStamps getOriginalData()
     char buffer[1024] = {0};
     static string analyze_last;
 
-    while (fgets(buffer, sizeof(buffer), dumpsys))
+    while (std::fgets(buffer, sizeof(buffer), dumpsys))
     {
         static string analyze;
         static unsigned long timestamps[3] = {0};
@@ -83,8 +67,7 @@ FtimeStamps getOriginalData()
         static bool found = false;
         for (size_t pos = 0, len = 0, i = 0, pos_b = 0; pos < analyze.length(); pos++)
         {
-            const bool isnumber = (analyze[pos] <= '9' && analyze[pos] >= '0');
-
+            const bool isnumber = std::isdigit(analyze[pos]);
             if (!found && isnumber)
             {
                 pos_b = pos;
@@ -94,7 +77,7 @@ FtimeStamps getOriginalData()
             {
                 len = pos - pos_b + 1;
                 found = false;
-                
+
                 std::from_chars(analyze.c_str() + pos_b, analyze.c_str() + pos_b + len, timestamps[i]);
                 i++;
             }

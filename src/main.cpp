@@ -1,9 +1,6 @@
 #include <sched.h>
 #include <iostream>
-#include <fstream>
-#include <unistd.h>
 #include <chrono>
-#include <string>
 #include <thread>
 
 #include "include/cpufreq.h"
@@ -13,7 +10,6 @@
 
 using std::cout;
 using std::endl;
-using std::string;
 using namespace std::chrono;
 using namespace std::this_thread;
 

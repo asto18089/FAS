@@ -6,7 +6,6 @@
 
 using std::cout;
 using std::endl;
-using std::string;
 using std::vector;
 
 jank_data analyzeFrameData(const FtimeStamps &Fdata)
