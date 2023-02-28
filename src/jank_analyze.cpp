@@ -38,7 +38,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     standard_frametime = (*vsync_frametime.cbegin() + *(vsync_frametime.cbegin() + 1)) / 2;
 
     // 获得标准frametime
-    constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;  
+    constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;
+    constexpr long frametime_45fps = 1000 * 1000 * 1000 / 45;
     constexpr long frametime_60fps = 1000 * 1000 * 1000 / 60;
     constexpr long frametime_90fps = 1000 * 1000 * 1000 / 90;   
     constexpr long frametime_120fps = 1000 * 1000 * 1000 / 120;  
@@ -46,6 +47,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
     if (standard_frametime > frametime_30fps * 9 / 10)
         standard_frametime = frametime_30fps;
+    if (standard_frametime > frametime_45fps * 9 / 10)
+        standard_frametime = frametime_45fps;
     else if (standard_frametime > frametime_60fps * 9 / 10)
         standard_frametime = frametime_60fps;
     else if (standard_frametime > frametime_90fps * 9 / 10)
