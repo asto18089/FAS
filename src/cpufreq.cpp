@@ -13,6 +13,8 @@ using std::endl;
 Cpufreq::Cpufreq()
 {
     getFreq();
+    middle_cpu_table.reserve(20);
+    big_cpu_table.reserve(20);
 }
 
 void Cpufreq::getFreq()
@@ -34,7 +36,7 @@ void Cpufreq::getFreq()
         {
             unsigned long cur;
             std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
-            middle_cpu_table.push_back(cur);
+            middle_cpu_table.emplace_back(cur);
             pos = i + 1;
         }
     }
@@ -51,7 +53,7 @@ void Cpufreq::getFreq()
         {
             unsigned long cur;
             std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
-            big_cpu_table.push_back(cur);
+            big_cpu_table.emplace_back(cur);
             pos = i + 1;
         }
     }
