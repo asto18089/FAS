@@ -36,6 +36,8 @@ int main()
 
     start_close_others();
 
+    auto cost = steady_clock::now();
+    
     while (true)
     {
         while (getSurfaceview().empty())
@@ -43,10 +45,10 @@ int main()
             sleep_for(seconds(1));
             cpu_controller.limit_clear();
         }
-
+        
+        sleep_for(milliseconds(100) - duration_cast<milliseconds>(steady_clock::now() - cost));
+        
         const jank_data jdata = analyzeFrameData(getOriginalData());
-
-        sleep_for(milliseconds(100));
 
         /* nice是超时帧占所有帧的百分率 */
 
@@ -60,5 +62,7 @@ int main()
             cpu_controller.limit(1);
         else
             cpu_controller.limit(std::pow(jdata.nice() * 10, 2));
+            
+        cost = steady_clock::now();
     }
 }
