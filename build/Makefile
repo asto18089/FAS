@@ -1,9 +1,14 @@
-CPPFLAGS = -Wall -std=c++20 -Os -flto -stdlib=libc++ -mcpu=cortex-a78 -fno-rtti -fvisibility=hidden -static-libstdc++ -fuse-ld=lld -Wl,-O3,--lto-O3,--gc-sections,--icf=all,-s,-x
+CPPFLAGS = -Wall -std=c++20 -stdlib=libc++
+OPTIMIZE = -Os -flto -mcpu=cortex-a78 -fno-rtti -fvisibility=hidden -static-libstdc++ -fuse-ld=lld -Wl,-O3,--lto-O3,--gc-sections,--icf=all,-s,-x
 CLANG = $(NDK)/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33-clang++
+CLANG_TIDY = clang-tidy
+CLANG_TIDY_CHECKS = android-*,bugprone-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,-modernize-use-trailing-return-type
 .PHONY:clean
-FPSeas: ../src/*.cpp
-	$(CLANG) $(CPPFLAGS) $^ -o FAS
+FAS: ../src/*.cpp
+	$(CLANG) $(CPPFLAGS) $(OPTIMIZE) $^ -o FAS
 	sstrip ./FAS; true
 	cp -f ./FAS ../Magisk_Module/FAS
+lint: ../src/*.cpp
+	$(CLANG_TIDY) --checks=$(CLANG_TIDY_CHECKS) --fix-errors --fix-notes $^ -- $(CPPFLAGS) 
 clean:
 	rm -f FAS

@@ -34,7 +34,7 @@ void Cpufreq::getFreq()
     {
         if (freq[i] == ' ')
         {
-            unsigned long cur;
+            unsigned long cur = 0;
             std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
             middle_cpu_table.emplace_back(cur);
             pos = i + 1;
@@ -51,7 +51,7 @@ void Cpufreq::getFreq()
     {
         if (freq[i] == ' ')
         {
-            unsigned long cur;
+            unsigned long cur = 0;
             std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
             big_cpu_table.emplace_back(cur);
             pos = i + 1;
@@ -59,8 +59,8 @@ void Cpufreq::getFreq()
     }
 
     // 频率从大到小
-    std::sort(middle_cpu_table.begin(), middle_cpu_table.end(), std::greater<unsigned long>());
-    std::sort(big_cpu_table.begin(), big_cpu_table.end(), std::greater<unsigned long>());
+    std::sort(middle_cpu_table.begin(), middle_cpu_table.end(), std::greater<>());
+    std::sort(big_cpu_table.begin(), big_cpu_table.end(), std::greater<>());
 
     // 处理频率偏移算法
     for (kpi_min = 0; kpi_min < std::min(big_cpu_table.size(), middle_cpu_table.size()); kpi_min++)
@@ -154,7 +154,7 @@ void Cpufreq::limit(const int &n)
     Cpu_big_limit();
 }
 
-void Cpufreq::set_scaling(const short &n)
+void Cpufreq::set_scaling(const int &n)
 {
     scaling = n;
 }

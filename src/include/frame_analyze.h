@@ -11,7 +11,7 @@ struct FtimeStamps
     vector<unsigned long> start_time_stamps;
     vector<unsigned long> vsync_time_stamps;
     vector<unsigned long> end_time_stamps;
-    
+
     FtimeStamps()
     {
         start_time_stamps.reserve(10);

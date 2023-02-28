@@ -1,3 +1,4 @@
+#include <cmath>
 #include <sched.h>
 #include <iostream>
 #include <chrono>
@@ -9,7 +10,6 @@
 #include "include/close_others.h"
 
 using std::cout;
-using std::endl;
 using namespace std::chrono;
 using namespace std::this_thread;
 
@@ -29,12 +29,9 @@ static void bound2little()
 int main()
 {
     bound2little();
-    
     cout.sync_with_stdio(false);
-    cout << std::unitbuf;
 
     Cpufreq cpu_controller;
-    
     cpu_controller.set_scaling(2);
 
     start_close_others();
@@ -47,14 +44,14 @@ int main()
             cpu_controller.limit_clear();
         }
 
-        jank_data jdata = analyzeFrameData(getOriginalData());
-            
+        const jank_data jdata = analyzeFrameData(getOriginalData());
+
         sleep_for(milliseconds(100));
-        
-        /*nice是超时帧占所有帧的百分率*/
-        
+
+        /* nice是超时帧占所有帧的百分率 */
+
         // cout << jdata.nice() << endl;
-        
+
         if (jdata.nice() >= 0.02 && jdata.nice() <= 0.05) // 掉帧刚刚好
             continue;
         else if (jdata.nice() <= 0.04) // 掉帧少了，有余量
@@ -62,6 +59,6 @@ int main()
         else if (jdata.nice() <= 0.1) // 掉帧多了，卡顿
             cpu_controller.limit(1);
         else
-            cpu_controller.limit(pow(jdata.nice() * 10, 2));
+            cpu_controller.limit(std::pow(jdata.nice() * 10, 2));
     }
 }

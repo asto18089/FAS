@@ -47,7 +47,7 @@ FtimeStamps getOriginalData()
 {
     FtimeStamps Fdata;
 
-    string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\' " + "2>/dev/null";
+    const string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\' 2>/dev/null";
     FILE *dumpsys = popen(cmd.c_str(), "r");
     
     if (dumpsys == nullptr)
@@ -109,9 +109,9 @@ FtimeStamps getOriginalData()
                 goto ANALYZE_END;
         }
 
-        Fdata.start_time_stamps.emplace_back(timestamps[0]);
-        Fdata.vsync_time_stamps.emplace_back(timestamps[1]);
-        Fdata.end_time_stamps.emplace_back(timestamps[2]);
+        Fdata.start_time_stamps.push_back(timestamps[0]);
+        Fdata.vsync_time_stamps.push_back(timestamps[1]);
+        Fdata.end_time_stamps.push_back(timestamps[2]);
         
         analyze_last_t = std::move(analyze);
         

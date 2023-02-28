@@ -4,15 +4,13 @@
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
 
-using std::cout;
-using std::endl;
 using std::vector;
 
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
    需要让始终保持发生一定数量轻微的超时
-   如果framtime小于该(需要)超时后的frametime
+   如果frametime小于该(需要)超时后的frametime
    则说明性能余量过多
-   如果framtime大于该frametime
+   如果frametime大于该frametime
    则说明需要更多性能
    如此可得到游戏运行刚好需要的频率 */
 
@@ -41,8 +39,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     constexpr long frametime_30fps = 1000 * 1000 * 1000 / 30;
     constexpr long frametime_45fps = 1000 * 1000 * 1000 / 45;
     constexpr long frametime_60fps = 1000 * 1000 * 1000 / 60;
-    constexpr long frametime_90fps = 1000 * 1000 * 1000 / 90;   
-    constexpr long frametime_120fps = 1000 * 1000 * 1000 / 120;  
+    constexpr long frametime_90fps = 1000 * 1000 * 1000 / 90;
+    constexpr long frametime_120fps = 1000 * 1000 * 1000 / 120;
     constexpr long frametime_144fps = 1000 * 1000 * 1000 / 144;
 
     if (standard_frametime > frametime_30fps * 9 / 10)
@@ -57,12 +55,9 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         standard_frametime = frametime_120fps;
     else if (standard_frametime > frametime_144fps * 9 / 10)
         standard_frametime = frametime_144fps;
-        
 
     for (const auto &i : vsync_frametime)
     {
-        // cout << i << '\n';
-        
         if (i > standard_frametime)
             Jdata.OOT++;
         else
@@ -72,7 +67,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     return Jdata;
 }
 
-float jank_data::nice() const
+double jank_data::nice() const
 {
-    return (float)(this->OOT) / (float)(this->OOT + this->LOT);
+    return (double)(this->OOT) / (double)(this->OOT + this->LOT);
 }
