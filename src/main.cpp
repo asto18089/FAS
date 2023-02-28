@@ -29,6 +29,7 @@ static void bound2little()
 int main()
 {
     bound2little();
+    
     cout.sync_with_stdio(false);
     cout << std::unitbuf;
 
@@ -52,13 +53,15 @@ int main()
         
         /*nice是超时帧占所有帧的百分率*/
         
-        if (jdata.nice() >= 0.1 && jdata.nice() <= 0.12) // 掉帧刚刚好
+        // cout << jdata.nice() << endl;
+        
+        if (jdata.nice() >= 0.02 && jdata.nice() <= 0.05) // 掉帧刚刚好
             continue;
-        else if (jdata.nice() <= 0.1) // 掉帧少了，有余量
+        else if (jdata.nice() <= 0.04) // 掉帧少了，有余量
             cpu_controller.limit(-1);
-        else if (jdata.nice() < 0.18) // 掉帧多了，卡死
+        else if (jdata.nice() <= 0.1) // 掉帧多了，卡顿
             cpu_controller.limit(1);
-        else 
-            cpu_controller.limit(jdata.nice() * 10 + 1);
+        else
+            cpu_controller.limit(pow(jdata.nice() * 10, 2));
     }
 }

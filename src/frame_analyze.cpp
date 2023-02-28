@@ -86,7 +86,7 @@ FtimeStamps getOriginalData()
                 pos_b = pos;
                 found = true;
             }
-            else if (found && (!isnumber || pos == analyze.length() - 1))
+            else if (found && (! isnumber || pos == analyze.length() - 1))
             {
                 len = pos - pos_b + 1;
                 found = false;
