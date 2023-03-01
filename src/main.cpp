@@ -37,6 +37,7 @@ int main()
     start_close_others();
 
     auto cost = steady_clock::now();
+    int speedup = 0;
     
     while (true)
     {
@@ -46,7 +47,7 @@ int main()
             cpu_controller.limit_clear();
         }
         
-        sleep_for(milliseconds(100) - duration_cast<milliseconds>(steady_clock::now() - cost));
+        sleep_for(milliseconds(100) - duration_cast<milliseconds>(steady_clock::now() - cost) - milliseconds(speedup));
         
         const jank_data jdata = analyzeFrameData(getOriginalData());
 
@@ -55,13 +56,24 @@ int main()
         // cout << jdata.nice() << endl;
 
         if (jdata.nice() >= 0.02 && jdata.nice() <= 0.05) // 掉帧刚刚好
-            continue;
+        {
+            speedup = -20;
+        }
         else if (jdata.nice() <= 0.04) // 掉帧少了，有余量
+        {
+            speedup = 5;
             cpu_controller.limit(-1);
+        }
         else if (jdata.nice() <= 0.1) // 掉帧多了，卡顿
+        {
+            speedup = 10;
             cpu_controller.limit(1);
+        }
         else
+        {
+            speedup = -10;
             cpu_controller.limit(std::pow(jdata.nice() * 10, 2));
+        }
             
         cost = steady_clock::now();
     }
