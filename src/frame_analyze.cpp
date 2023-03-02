@@ -95,27 +95,26 @@ FtimeStamps getOriginalData()
             i++;
         }
 
-        for (const auto &i : timestamps)
-        {
-            if (i == 0)
-            {
-                Fdata.start_time_stamps.clear();
-                Fdata.vsync_time_stamps.clear();
-                Fdata.end_time_stamps.clear();
-                goto ANALYZE_END;
-            }
-            else if (i >= 10000000000000000)
-                goto ANALYZE_END;
-        }
+        // 等于 0 或大于等于 10000000000000000
+        auto pred = [](const auto &i) { return i == 0 || i >= 10000000000000000; };
+        
+        auto it = std::find_if(timestamps.begin(), timestamps.end(), pred);
 
-        Fdata.start_time_stamps.push_back(timestamps[0]);
-        Fdata.vsync_time_stamps.push_back(timestamps[1]);
-        Fdata.end_time_stamps.push_back(timestamps[2]);
+        // 如果找到了，就清除和截断向量
+        if (it != timestamps.end())
+        {
+            Fdata.start_time_stamps.clear();
+            Fdata.vsync_time_stamps.clear();
+            Fdata.end_time_stamps.clear();
+        }
+        else
+        {
+            Fdata.start_time_stamps.push_back(timestamps[0]);
+            Fdata.vsync_time_stamps.push_back(timestamps[1]);
+            Fdata.end_time_stamps.push_back(timestamps[2]);
+        }
         
         analyze_last_t = analyze;
-        
-    ANALYZE_END:
-        continue;
     }
     
     analyze_last = std::move(analyze_last_t);
