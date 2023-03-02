@@ -57,7 +57,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     for (auto i = vsync_begin + 1; i < vsync_end - 1; i++)
     {
         if (*i > *(i - 1))
-            vsync_frametime.emplace_back(*i - *(i - 1));
+            vsync_frametime.push_back(*i - *(i - 1));
     }
 
     standard_frametime = (*vsync_frametime.cbegin() + *(vsync_frametime.cbegin() + 1)) / 2;

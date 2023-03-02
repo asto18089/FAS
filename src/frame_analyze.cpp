@@ -1,5 +1,7 @@
 #include <cstdio>
 #include <charconv>
+#include <string_view>
+#include <array>
 
 #include "include/frame_analyze.h"
 
@@ -59,13 +61,13 @@ FtimeStamps getOriginalData()
     }
 
     char buffer[1024] = {0};
-    static string analyze, analyze_last, analyze_last_t;
+    static std::string_view analyze;
+    static string analyze_last, analyze_last_t;
 
     while (std::fgets(buffer, sizeof(buffer), dumpsys))
     {
-        static unsigned long timestamps[3] = {0};
+        static std::array<unsigned long, 3> timestamps = {0};
         analyze = buffer;
-        analyze.pop_back();
 
         if (analyze_last == analyze && ! analyze_last.empty())
         {
@@ -77,23 +79,20 @@ FtimeStamps getOriginalData()
             continue;
         }
 
-        static bool found = false;
-        for (size_t pos = 0, len = 0, i = 0, pos_b = 0; pos < analyze.length(); pos++)
+        for (size_t pos = 0, i = 0; pos < analyze.length();)
         {
-            const bool isnumber = std::isdigit(analyze[pos]);
-            if (!found && isnumber)
-            {
-                pos_b = pos;
-                found = true;
-            }
-            else if (found && (! isnumber || pos == analyze.length() - 1))
-            {
-                len = pos - pos_b + 1;
-                found = false;
+            pos = std::find_if_not(analyze.begin() + pos, analyze.end(), [](char c) { return !std::isdigit(c); }) - analyze.begin();
+            
+            if (pos == analyze.length())
+                break;
 
-                std::from_chars(analyze.c_str() + pos_b, analyze.c_str() + pos_b + len, timestamps[i]);
-                i++;
-            }
+            size_t end = std::find_if_not(analyze.begin() + pos + 1, analyze.end(), [](char c) { return std::isdigit(c); }) - analyze.begin();
+    
+            if (i < timestamps.size())
+                std::from_chars(analyze.data() + pos, analyze.data() + end, timestamps[i]);
+            
+            pos = end;
+            i++;
         }
 
         for (const auto &i : timestamps)
@@ -113,7 +112,7 @@ FtimeStamps getOriginalData()
         Fdata.vsync_time_stamps.push_back(timestamps[1]);
         Fdata.end_time_stamps.push_back(timestamps[2]);
         
-        analyze_last_t = std::move(analyze);
+        analyze_last_t = analyze;
         
     ANALYZE_END:
         continue;
