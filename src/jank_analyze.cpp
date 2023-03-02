@@ -1,10 +1,7 @@
-#include <vector>
 #include <iostream>
 
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
-
-using std::vector;
 
 #define FRAMETIME_30FPS (1000 * 1000 * 1000 / 30)
 #define FRAMETIME_45FPS (1000 * 1000 * 1000 / 45)
@@ -12,7 +9,6 @@ using std::vector;
 #define FRAMETIME_90FPS (1000 * 1000 * 1000 / 90)
 #define FRAMETIME_120FPS (1000 * 1000 * 1000 / 120)
 #define FRAMETIME_144FPS (1000 * 1000 * 1000 / 144)
-// 所有可能的标准帧时间
 const long standard_frametimes[] = {FRAMETIME_30FPS, FRAMETIME_45FPS, FRAMETIME_60FPS, FRAMETIME_90FPS, FRAMETIME_120FPS, FRAMETIME_144FPS};
 
 static long find_nearest_standard_frametime(const long& current_frametime) {

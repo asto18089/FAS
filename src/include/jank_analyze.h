@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+using std::vector;
+
 struct jank_data
 {
     int OOT = 0;
