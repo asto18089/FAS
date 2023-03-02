@@ -4,17 +4,15 @@
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
 
-// 定义帧率对应的时间间隔为宏
+using std::vector;
+
 #define FRAMETIME_30FPS (1000 * 1000 * 1000 / 30)
 #define FRAMETIME_45FPS (1000 * 1000 * 1000 / 45)
 #define FRAMETIME_60FPS (1000 * 1000 * 1000 / 60)
 #define FRAMETIME_90FPS (1000 * 1000 * 1000 / 90)
 #define FRAMETIME_120FPS (1000 * 1000 * 1000 / 120)
 #define FRAMETIME_144FPS (1000 * 1000 * 1000 / 144)
-
-using std::vector;
-
-// 定义一个数组存储所有可能的标准帧时间
+// 所有可能的标准帧时间
 const long standard_frametimes[] = {FRAMETIME_30FPS, FRAMETIME_45FPS, FRAMETIME_60FPS, FRAMETIME_90FPS, FRAMETIME_120FPS, FRAMETIME_144FPS};
 
 static long find_nearest_standard_frametime(const long& current_frametime) {
@@ -27,17 +25,14 @@ static long find_nearest_standard_frametime(const long& current_frametime) {
         mid = (left + right) >> 1;
         
         if (current_frametime >= standard_frametimes[mid] * 9 / 10)
-        {
             left = mid + 1;
-        }
         else
-        {
             right = mid - 1;
-        }
     }
 
     return standard_frametimes[left];
 }
+
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
    需要让始终保持发生一定数量轻微的超时
    如果frametime小于该(需要)超时后的frametime
