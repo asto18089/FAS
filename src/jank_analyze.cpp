@@ -1,6 +1,7 @@
 #include <iostream>
 #include <array>
 #include <numeric>
+#include <map>
 
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
@@ -13,24 +14,64 @@ enum FRAMETIMES {
     FRAMETIME_120FPS = 1000 * 1000 * 1000 / 120,
     FRAMETIME_144FPS = 1000 * 1000 * 1000 / 144
 };
-const std::array<unsigned long, 6> standard_frametimes {FRAMETIME_30FPS, FRAMETIME_45FPS, FRAMETIME_60FPS, FRAMETIME_90FPS, FRAMETIME_120FPS, FRAMETIME_144FPS};
+const std::array<unsigned long, 6> STANDARD_FRAMETIMES { FRAMETIME_30FPS, FRAMETIME_45FPS, FRAMETIME_60FPS, FRAMETIME_90FPS, FRAMETIME_120FPS, FRAMETIME_144FPS };
 
 static unsigned long find_nearest_standard_frametime(const unsigned long& current_frametime) {
-    size_t left = 0, right = std::size(standard_frametimes) - 1, mid;
+    ssize_t left = 0, right = std::size(STANDARD_FRAMETIMES) - 1, mid;
     
     while (left <= right)
     {
         mid = (left + right) >> 1;
+        if (left >= std::size(STANDARD_FRAMETIMES) - 1)
+        {
+            left = std::size(STANDARD_FRAMETIMES) - 1;
+            break;
+        }
+            
+        if (right <= 0)
+        {
+            right = 0;
+            left = 0;
+            break;
+        }
 
-        if (current_frametime < standard_frametimes[mid])
+        if (current_frametime < STANDARD_FRAMETIMES[mid])
             left = mid + 1;
         else
             right = mid - 1;
     }
     
-    const auto& left_value = standard_frametimes[left];
-    const auto& right_value = standard_frametimes[right];
+    const auto& left_value = STANDARD_FRAMETIMES[left];
+    const auto& right_value = STANDARD_FRAMETIMES[right];
     return (current_frametime - left_value < right_value - current_frametime) ? left_value : right_value;
+}
+
+template<typename T>
+T mode(const vector<T>& v) {
+    // 创建一个map，键为元素值，值为出现次数
+    std::map<T, int> m;
+  
+    // 遍历vector，更新map中的计数
+    for (const auto& x : v) {
+        m[x / (1000 * 1000)]++;
+    }
+  
+    // 初始化众数和最大次数
+    T mode = v[0];
+    int max_count = m[v[0]];
+  
+    // 遍历map，找到最大次数对应的元素
+    for (const auto& p : m)
+    {
+        if (p.second > max_count)
+        {
+            mode = p.first;
+            max_count = p.second;
+        }
+    }
+  
+    // 返回众数
+    return mode;
 }
 
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
@@ -63,10 +104,12 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             vsync_frametime.push_back(*i - *(i - 1));
     }
 
-    standard_frametime = std::accumulate(vsync_frametime.cbegin(), vsync_frametime.cend(), 0) / vsync_frametime.size();
+    standard_frametime = mode(vsync_frametime) * 1000 * 1000;
  
     // 获得标准frametime
     standard_frametime = find_nearest_standard_frametime(standard_frametime);
+    
+    // std::cout << standard_frametime << '\n';
 
     for (auto &i : vsync_frametime)
     {
@@ -108,7 +151,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
                 break;
             }*/
         
-        std::cout << i << '\n';
+        // std::cout << i << '\n';
         if (i > standard_frametime)
             Jdata.OOT++;
         else

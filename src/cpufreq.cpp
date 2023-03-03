@@ -59,20 +59,19 @@ void Cpufreq::show_middle_table()
 {
     for (const auto &i : middle_cpu_table)
         cout << i << ' ';
-    cout << endl;
+    cout << '\n';
 }
 
 void Cpufreq::show_big_table()
 {
     for (const auto &i : big_cpu_table)
         cout << i << ' ';
-    cout << endl;
+    cout << '\n';
 }
 
 void Cpufreq::Cpu_big_limit()
 {
-    static int tmp = 666;
-    static int target = 999;
+    static int tmp = 666, target = 999;
 
     if (kpi - kpi_min - scaling < 0)
         target = 0;
@@ -92,8 +91,7 @@ void Cpufreq::Cpu_big_limit()
 
 void Cpufreq::Cpu_middle_limit()
 {
-    static int tmp = 666;
-    static int target = 999;
+    static size_t tmp = 666, target = 999;
 
     if (kpi < 0)
         target = 0;
@@ -113,9 +111,9 @@ void Cpufreq::Cpu_middle_limit()
 
 void Cpufreq::limit_clear()
 {
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq", big_cpu_table[0]);
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq", middle_cpu_table[0]);
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", middle_cpu_table[0]);
+    Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq", *big_cpu_table.cbegin());
+    Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq", *middle_cpu_table.cbegin());
+    Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", *middle_cpu_table.cbegin());
 }
 
 void Cpufreq::limit(const int &n)

@@ -2,6 +2,8 @@
 #include <sched.h>
 #include <iostream>
 #include <chrono>
+#include <sstream>
+#include <fstream>
 #include <thread>
 
 #include "include/cpufreq.h"
@@ -17,11 +19,17 @@ static void bound2little()
 {
     cpu_set_t mask;
     CPU_ZERO(&mask);
-
-    CPU_SET(0, &mask);
-    CPU_SET(1, &mask);
-    CPU_SET(2, &mask);
-    CPU_SET(3, &mask);
+    
+    std::ifstream fd("/sys/devices/system/cpu/cpufreq/policy0/related_cpus");
+    string related_cpus;
+    std::getline(fd, related_cpus);
+    std::istringstream cut(related_cpus);
+    
+    short cpu = 0;
+    while (cut >> cpu)
+    {
+        CPU_SET(cpu, &mask);
+    }
 
     sched_setaffinity(0, sizeof(cpu_set_t), &mask);
 }
@@ -47,7 +55,7 @@ int main()
             cpu_controller.limit_clear();
         }
         
-        sleep_for(milliseconds(100) - duration_cast<milliseconds>(steady_clock::now() - cost) - milliseconds(speedup));
+        sleep_for(milliseconds(125) - duration_cast<milliseconds>(steady_clock::now() - cost) - milliseconds(speedup));
         
         const jank_data jdata = analyzeFrameData(getOriginalData());
         if (jdata.empty())
