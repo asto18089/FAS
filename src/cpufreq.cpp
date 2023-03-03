@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <charconv>
 
@@ -18,51 +19,34 @@ Cpufreq::Cpufreq()
 }
 
 void Cpufreq::getFreq()
-{ // 读取频率表
-    std::ifstream list;
-    std::string freq;
-    size_t pos = 0;
-
-    list.open("/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies"); // cpu4-6
-    if (!list)
-        list.open("/sys/devices/system/cpu/cpufreq/policy3/scaling_available_frequencies"); // cpu3-6
-    std::getline(list, freq);
-    list.close();
-
-    freq.pop_back();
-    for (size_t i = 0; i < freq.length() - 1; i++)
+{
+    // 定义一个辅助函数来读取频率表并排序
+    auto readAndSortFreq = [](const std::string& filename, std::vector<unsigned long>& table)
     {
-        if (freq[i] == ' ')
+        std::ifstream list;
+        std::string freq;
+
+        list.open(filename);
+        std::getline(list, freq);
+        list.close();
+
+        std::istringstream iss(freq);
+        while (iss >> freq)
         {
-            unsigned long cur = 0;
-            std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
-            middle_cpu_table.emplace_back(cur);
-            pos = i + 1;
+            table.push_back(std::stol(freq));
         }
+        // 频率从大到小
+        std::sort(table.begin(), table.end(), std::greater<>());
+    };
+    
+    readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies", middle_cpu_table);
+    if (middle_cpu_table.empty()) {
+        readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy3/scaling_available_frequencies", middle_cpu_table);
     }
+    
+    readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy7/scaling_available_frequencies", big_cpu_table);
 
-    list.open("/sys/devices/system/cpu/cpufreq/policy7/scaling_available_frequencies"); // cpu7
-    std::getline(list, freq);
-    list.close();
-
-    freq.pop_back();
-    pos = 0;
-    for (size_t i = 0; i < freq.length() - 1; i++)
-    {
-        if (freq[i] == ' ')
-        {
-            unsigned long cur = 0;
-            std::from_chars(freq.c_str() + pos, freq.c_str() + i, cur);
-            big_cpu_table.emplace_back(cur);
-            pos = i + 1;
-        }
-    }
-
-    // 频率从大到小
-    std::sort(middle_cpu_table.begin(), middle_cpu_table.end(), std::greater<>());
-    std::sort(big_cpu_table.begin(), big_cpu_table.end(), std::greater<>());
-
-    // 处理频率偏移算法
+    // 处理频率偏移
     for (kpi_min = 0; kpi_min < std::min(big_cpu_table.size(), middle_cpu_table.size()); kpi_min++)
     {
         if (big_cpu_table[kpi_min + 1] < middle_cpu_table[0])
