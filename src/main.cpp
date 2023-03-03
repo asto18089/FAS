@@ -50,6 +50,11 @@ int main()
         sleep_for(milliseconds(100) - duration_cast<milliseconds>(steady_clock::now() - cost) - milliseconds(speedup));
         
         const jank_data jdata = analyzeFrameData(getOriginalData());
+        if (jdata.empty())
+        {
+            speedup = -50;
+            continue;
+        }
 
         /* nice是超时帧占所有帧的百分率 */
 
