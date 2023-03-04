@@ -1,13 +1,14 @@
 #pragma once
 
+#include <map>
 #include <vector>
 
 using std::vector;
+using std::map;
 
 class Cpufreq
 {
-    vector<unsigned long> middle_cpu_table;
-    vector<unsigned long> big_cpu_table;
+    map<int, vector<unsigned long>> freqmap;
     int kpi = 0;
     int kpi_min = 0;
     int scaling = 2;

@@ -11,6 +11,7 @@
 
 using std::cout;
 using std::endl;
+using std::string;
 
 using namespace std::filesystem;
 
@@ -44,7 +45,10 @@ void Cpufreq::getFreq()
     
     for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/"))
     {
-        if (*string(entry.path()).cend() != '0')
+        if (entry.path().filename == "policy0")
+            continue;
+        
+        
     }
     
     readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies", middle_cpu_table);
