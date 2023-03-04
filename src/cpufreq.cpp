@@ -23,7 +23,7 @@ Cpufreq::Cpufreq()
     big_cpu_table.reserve(20);
 }
 
-void Cpufreq::getFreq(cosnt int& scaling)
+void Cpufreq::getFreq()
 {
     map<size_t, vector<unsigned long>> freqtables;
 
@@ -65,7 +65,7 @@ void Cpufreq::getFreq(cosnt int& scaling)
         *table.cbegin() < freq_temp && (min_maxFreq = *table.cbegin());
 
     // 获取该频率表距指定频率最近的频率的下标
-    size_t kpi_closest = [&](const vector<unsigned long>& v)
+    auto kpi_closest = [&](const vector<unsigned long>& v)
     {
         for (const auto& i = v.cbegin(); i < v.cend() - 1; i++)
         {
@@ -76,7 +76,10 @@ void Cpufreq::getFreq(cosnt int& scaling)
         return (size_t)v.size();
     };
     
-    
+    for (const auto& [policy, table] : freqtables)
+    {
+        kpi_closest(table);
+    }
 }
 
 void Cpufreq::getFreq()
