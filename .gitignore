@@ -35,3 +35,6 @@ FAS
 # Mt
 *.bak
 *.zip
+
+# Vscode
+.vscode
