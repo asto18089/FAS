@@ -49,6 +49,7 @@ void Cpufreq::getFreq()
         return table;
     };
 
+    size_t policy_it = 0;
     for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/")) // 读取频率表
     {
         const auto& policyname = entry.path().filename();
@@ -56,7 +57,14 @@ void Cpufreq::getFreq()
         if (policyname == "policy0") // 忽略小核
             continue;
         
-        freqtables[(size_t)*policyname.end()] = readAndSortFreq(entry.path().string() + "/scaling_available_frequencies");
+        freqtables[policy_it] = readAndSortFreq(entry.path().string() + "/scaling_available_frequencies");
+        policy_it++;
+    }
+
+    size_t map_size = 0;
+    for (const auto& [policy, table] : freqtables)
+    {
+        (table.size() > map_size) && (map_size = table.size());
     }
 
     // 获取最小的最大频率
@@ -76,9 +84,14 @@ void Cpufreq::getFreq()
         return (size_t)v.size();
     };
     
+    vector<size_t> kpi_l;
     for (const auto& [policy, table] : freqtables)
+        kpi_l.push_back(kpi_closest(table));
+
+    size_t& kpi_l_max = (std::max_element(kpi_l.cbegin(), kpi_l.cend()) - kpi_l.cbegin());
+    for (size_t i = 0; i < map_size; i++)
     {
-        kpi_closest(table);
+        freqmap[i].insert(kpi_l_max, )
     }
 }
 
