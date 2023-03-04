@@ -49,27 +49,34 @@ void Cpufreq::getFreq(cosnt int& scaling)
         return table;
     };
 
-    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/"))
+    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/")) // 读取频率表
     {
         const auto& policyname = entry.path().filename();
 
         if (policyname == "policy0") // 忽略小核
             continue;
         
-        freqtables[*policyname.end()] = readAndSortFreq(entry.path().string() + "/scaling_available_frequencies");
+        freqtables[(size_t)*policyname.end()] = readAndSortFreq(entry.path().string() + "/scaling_available_frequencies");
     }
 
     // 获取最小的最大频率
-    auto min_maxFreq = [&]()
+    unsigned long min_maxFreq = 0;
+    for (const auto& [key, table] : freqtables)
+        *table.cbegin() < freq_temp && (min_maxFreq = *table.cbegin());
+
+    // 获取该频率表距指定频率最近的频率的下标
+    size_t kpi_closest = [&](const vector<unsigned long>& v)
     {
-        unsigned long freq_temp = 0;
-        for (const auto& [key, table] : freqtables)
-            *table.cbegin() < freq_temp && (freq_temp = *table.cbegin());
+        for (const auto& i = v.cbegin(); i < v.cend() - 1; i++)
+        {
+            if (*(i + 1) <= min_maxFreq)
+                return (size_t)(i - v.cbegin());
+        }
 
-        return freq_temp;
+        return (size_t)v.size();
     };
-
-    freqtables[min_maxFreq()]
+    
+    
 }
 
 void Cpufreq::getFreq()
