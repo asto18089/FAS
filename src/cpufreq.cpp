@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <filesystem>
 #include <charconv>
 
 #include "include/cpufreq.h"
@@ -10,6 +11,8 @@
 
 using std::cout;
 using std::endl;
+
+using namespace std::filesystem;
 
 Cpufreq::Cpufreq()
 {
@@ -38,6 +41,11 @@ void Cpufreq::getFreq()
         // 频率从大到小
         std::sort(table.begin(), table.end(), std::greater<>());
     };
+    
+    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/"))
+    {
+        if (*string(entry.path()).cend() != '0')
+    }
     
     readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies", middle_cpu_table);
     if (middle_cpu_table.empty()) {
