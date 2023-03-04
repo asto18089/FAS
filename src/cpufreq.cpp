@@ -89,9 +89,13 @@ void Cpufreq::getFreq()
         kpi_l.push_back(kpi_closest(table));
 
     size_t& kpi_l_max = (std::max_element(kpi_l.cbegin(), kpi_l.cend()) - kpi_l.cbegin());
+    
     for (size_t i = 0; i < map_size; i++)
     {
-        freqmap[i].insert(kpi_l_max, )
+        for (size_t it = 0; i < freqtable.size(); i++)
+        {
+            
+        }
     }
 }
 
