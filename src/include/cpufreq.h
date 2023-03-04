@@ -11,8 +11,7 @@ class Cpufreq
     map<int, vector<unsigned long>> freqmap;
     int kpi = 0;
     int kpi_min = 0;
-    int scaling = 2;
-    void getFreq();
+    void getFreq(const int& scaling);
     void Cpu_big_limit();
     void Cpu_middle_limit();
 

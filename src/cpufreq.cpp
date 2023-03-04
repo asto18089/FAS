@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <stringview>
 #include <filesystem>
 #include <charconv>
 
@@ -20,6 +21,55 @@ Cpufreq::Cpufreq()
     getFreq();
     middle_cpu_table.reserve(20);
     big_cpu_table.reserve(20);
+}
+
+void Cpufreq::getFreq(cosnt int& scaling)
+{
+    map<size_t, vector<unsigned long>> freqtables;
+
+    // 定义一个辅助函数来读取频率表并排序
+    auto readAndSortFreq = [](const std::string_view& filename)
+    {
+        std::ifstream list;
+        string freq;
+        vector<unsigned long> table;
+
+        list.open(filename);
+        std::getline(list, freq);
+        list.close();
+
+        std::istringstream iss(freq);
+        while (iss >> freq)
+        {
+            table.push_back(std::stol(freq));
+        }
+        // 频率从大到小
+        std::sort(table.begin(), table.end(), std::greater<>());
+
+        return table;
+    };
+
+    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/"))
+    {
+        const auto& policyname = entry.path().filename();
+
+        if (policyname == "policy0") // 忽略小核
+            continue;
+        
+        freqtables[*policyname.end()] = readAndSortFreq(entry.path().string() + "/scaling_available_frequencies");
+    }
+
+    // 获取最小的最大频率
+    auto min_maxFreq = [&]()
+    {
+        unsigned long freq_temp = 0;
+        for (const auto& [key, table] : freqtables)
+            *table.cbegin() < freq_temp && (freq_temp = *table.cbegin());
+
+        return freq_temp;
+    };
+
+    freqtables[min_maxFreq()]
 }
 
 void Cpufreq::getFreq()
@@ -42,14 +92,6 @@ void Cpufreq::getFreq()
         // 频率从大到小
         std::sort(table.begin(), table.end(), std::greater<>());
     };
-    
-    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/"))
-    {
-        if (entry.path().filename == "policy0")
-            continue;
-        
-        
-    }
     
     readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies", middle_cpu_table);
     if (middle_cpu_table.empty()) {
