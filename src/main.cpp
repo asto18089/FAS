@@ -2,10 +2,12 @@
 #include <iostream>
 #include <chrono>
 #include <sstream>
+#include <filesystem>
 #include <fstream>
 #include <thread>
 
 #include "include/cpufreq.h"
+#include "include/log.h"
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
 #include "include/close_others.h"
@@ -13,6 +15,7 @@
 using std::cout;
 using namespace std::chrono;
 using namespace std::this_thread;
+using namespace std::filesystem;
 
 static void bound2little()
 {
@@ -39,12 +42,19 @@ int main()
     cout.sync_with_stdio(false);
     std::cout << std::unitbuf;
 
+    Log log = Log(current_path().string + "/log.txt");
+    log.setLevel(LogLevel::Info);
+
     Cpufreq cpu_controller;
-    cout << "虚拟频率表: ";
-    cpu_controller.show_super_table();
+    log.write(LogLevel::Info, "Creating virtual frequency:")
+    for (const auto& i : cpu_controller.get_super_table())
+        log.write(LogLevel::Info, "Virtual Freq: " + std::to_string(i));
+    log.write(LogLevel::Info, "The virtual frequency table was created successfully");
+    
     cpu_controller.set_scaling(2);
 
     start_close_others();
+    log.write(LogLevel::Info, "The cleanup process starts")
 
     auto cost = steady_clock::now();
     int speedup = 0;

@@ -63,11 +63,9 @@ void Cpufreq::makeFreqTable(const unsigned long& freqdiff) // 建议freqdiff为5
     SuperFreqTable = makeSuperFreqTable(freqdiff);
 }
 
-void Cpufreq::show_super_table()
+vector<unsigned long> Cpufreq::get_super_table()
 {
-    for (const auto i : SuperFreqTable)
-        std::cout << i << ' ';
-    std::cout << '\n';
+    return this->SuperFreqTable;
 }
 
 void Cpufreq::writeFreq()

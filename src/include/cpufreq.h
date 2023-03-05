@@ -14,7 +14,7 @@ class Cpufreq
 public:
     Cpufreq();
     Cpufreq(const Cpufreq &) = delete; // dont copy this
-    void show_super_table();
+    vector<unsigned long> get_super_table();
     void limit(const int&);
     void limit_clear();
     void set_scaling(const int &);
