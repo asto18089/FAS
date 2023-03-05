@@ -1,4 +1,3 @@
-#include <cmath>
 #include <sched.h>
 #include <iostream>
 #include <chrono>

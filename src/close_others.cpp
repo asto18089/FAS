@@ -1,12 +1,14 @@
-#include <cstdlib>
 #include <unistd.h>
 #include <thread>
 #include <sys/prctl.h>
+#include <chrono>
 
 #include "include/close_others.h"
 #include "include/lockvalue.h"
 
 using std::thread;
+using namespace std::this_thread;
+using namespace std::chrono;
 
 static void close_others()
 {
@@ -19,7 +21,7 @@ static void close_others()
         Lockvalue("/sys/kernel/fpsgo/common/fpsgo_enable", 0);
         Lockvalue("/sys/module/perfmgr/parameters/perfmgr_enable", 0);
         Lockvalue("/sys/module/perfmgr_policy/parameters/perfmgr_enable", 0);
-        sleep(5);
+        sleep_for(seconds(5));
     }
 }
 
