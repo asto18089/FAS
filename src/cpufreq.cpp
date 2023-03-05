@@ -13,7 +13,7 @@ using namespace std::filesystem;
 
 Cpufreq::Cpufreq()
 {
-    makeFreqTable(100000);
+    makeFreqTable(50000);
     limit_clear();
 }
 
@@ -83,23 +83,39 @@ void Cpufreq::writeFreq()
         if (entry.path().filename() == "policy0")
             continue;
             
-        if (entry != end_entry && kpi - scaling >= 0)
-            Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi - scaling]);
+        if (entry != end_entry)
+        {
+            if (kpi + scaling < SuperFreqTable.size())
+                Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi + scaling]);
+            else
+                Lockvalue(entry.path().string() + "/scaling_max_freq", *SuperFreqTable.cend());
+        }
         else
+        {
             Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
+        }
     }
+    /*std::cout << kpi << ' ';
+    std::cout << SuperFreqTable[kpi] << '\n';*/
 }
 
-void Cpufreq::limit(const int& change)
+void Cpufreq::limit(const int& change_in)
 {
-    if (kpi + change >= 0 && kpi < 0)
-        kpi = kpi + change;
+    const int& change = -change_in;
+    if (change < 0)
+    {
+        if (kpi + change >= 0)
+            kpi = kpi + change;
+        else
+            kpi = 0;
+    }
     else
-        kpi = 0;
-    if (kpi + change <= SuperFreqTable.size() && change > 0)
-        kpi = kpi + change;
-    else
-        kpi = SuperFreqTable.size();
+    {
+        if (kpi + change <= SuperFreqTable.size() - 1)
+            kpi = kpi + change;
+        else
+            kpi = SuperFreqTable.size() - 1;
+    }
         
     writeFreq();
 }

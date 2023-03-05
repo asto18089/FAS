@@ -40,6 +40,7 @@ int main()
     cout.sync_with_stdio(false);
 
     Cpufreq cpu_controller;
+    cout << "虚拟频率表: ";
     cpu_controller.show_super_table();
     cpu_controller.set_scaling(2);
 
@@ -69,16 +70,16 @@ int main()
 
         // cout << jdata.nice() << endl;
 
-        if (jdata.nice() >= 0.02 && jdata.nice() <= 0.05) // 掉帧刚刚好
+        if (jdata.nice() >= 0.02 && jdata.nice() <= 0.04) // 掉帧刚刚好
         {
             speedup = -20;
         }
-        else if (jdata.nice() <= 0.04) // 掉帧少了，有余量
+        else if (jdata.nice() < 0.02) // 掉帧少了，有余量
         {
             speedup = 5;
             cpu_controller.limit(-1);
         }
-        else if (jdata.nice() <= 0.1) // 掉帧多了，卡顿
+        else if (jdata.nice() <= 0.05) // 掉帧多了，卡顿
         {
             speedup = 10;
             cpu_controller.limit(1);
@@ -86,7 +87,7 @@ int main()
         else
         {
             speedup = -10;
-            cpu_controller.limit(std::pow(jdata.nice() * 10, 2));
+            cpu_controller.limit(2);
         }
             
         cost = steady_clock::now();
