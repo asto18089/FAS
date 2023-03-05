@@ -40,7 +40,7 @@ void Cpufreq::makeFreqTable(const unsigned long& freqdiff) // 建议freqdiff为5
  
     for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
-        const auto& policyname = entry.path().filename();
+        const string& policyname = entry.path().filename();
         if (policyname == "policy0")
             continue;
         const auto& mam = readMAM(policyname);
@@ -123,7 +123,23 @@ void Cpufreq::limit(const int& change_in)
 void Cpufreq::limit_clear()
 {
     kpi = 0;
-    writeFreq();
+    auto readM = [](const string& policyname)
+    {
+        unsigned long max(0);
+        std::ifstream fd;
+        
+        fd.open("/sys/devices/system/cpu/cpufreq/" + policyname + "/cpuinfo_max_freq");
+        fd >> max;
+        fd.close();
+        
+        return max;
+    };
+    
+    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
+    {
+        const string& policyname = entry.path().filename();
+        Lockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
+    }
 }
 
 void Cpufreq::set_scaling(const int& new_scaling)
