@@ -38,6 +38,7 @@ int main()
 {
     bound2little();
     cout.sync_with_stdio(false);
+    std::cout << std::unitbuf;
 
     Cpufreq cpu_controller;
     cout << "虚拟频率表: ";
