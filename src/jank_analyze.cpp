@@ -123,17 +123,23 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         if (duration_cast<milliseconds>(steady_clock::now() - stamp) < seconds(1) && result != 0)
             return result;
         
-        FILE *dumpsys = popen("dumpsys SurfaceFlinger", "r");
+        FILE *dumpsys = popen("dumpsys SurfaceFlinger 2>/dev/null", "r");
+        if (dumpsys == nullptr)
+        {
+            pclose(dumpsys);
+            perror("Failed");
+            
+            return result;
+        }
         char buffer[1024] = {0};
         
         while (fgets(buffer, sizeof(buffer), dumpsys))
         {
             std::string analyze = buffer;
-            analyze.pop_back();
             
             if (analyze.find("refresh-rate") != std::string::npos)
             {
-                const size_t& pos = analyze.find(':');
+                const size_t& pos = analyze.find(':') + 1;
                 const size_t& len = analyze.find('.', pos + 1) - pos;
                 result = stoi(analyze.substr(pos, len));
                 break;
@@ -151,7 +157,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         if (standard_frametime <= flashtime)
             return;
             
-        const auto& high_ingorne = standard_frametime - flashtime;
+        const auto& high_ingorne = standard_frametime * 2 - flashtime;
         
         const std::string& s_highingorne = std::to_string(high_ingorne);
         const std::string& s_lowingorne = std::to_string(flashtime);
@@ -162,6 +168,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             
         auto same = [](const std::string& a, const std::string& b)
         {
+            if (a.length() <= 7)
+                return (*a.cbegin() == *b.cbegin());
             return (*a.cbegin() == *b.cbegin() && *(++a.cbegin()) == *(++b.cbegin()));
         };
         
@@ -173,7 +181,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     {
         ingorneMismatch(i);
         
-        std::cout << i << '\n';
+        // std::cout << i << '\n';
         if (i > standard_frametime)
             Jdata.OOT++;
         else
