@@ -58,7 +58,15 @@ int main()
             cpu_controller.limit_clear();
         }
         
-        sleep_for(milliseconds(125) - duration_cast<milliseconds>(steady_clock::now() - cost) - milliseconds(speedup));
+        auto sleep_dynamic = [&](const int& ms)
+        {
+            const auto& realtime = milliseconds(ms) - duration_cast<milliseconds>(steady_clock::now() - cost);
+            if (realtime > milliseconds(speedup))
+                sleep_for(realtime - milliseconds(speedup));
+            else
+                sleep_for(realtime);
+        };
+        sleep_dynamic(100);
         
         const jank_data jdata = analyzeFrameData(getOriginalData());
         if (jdata.empty())
@@ -70,7 +78,7 @@ int main()
         /* nice是超时帧占所有帧的百分率 */
 
         // cout << jdata.nice() << endl;
-
+        
         if (jdata.nice() >= 0.02 && jdata.nice() <= 0.04) // 掉帧刚刚好
         {
             speedup = -20;
@@ -83,12 +91,17 @@ int main()
         else if (jdata.nice() <= 0.05) // 掉帧多了，卡顿
         {
             speedup = 10;
-            cpu_controller.limit(1);
+            cpu_controller.limit(3);
+        }
+        else if (jdata.nice() <= 0.08)
+        {
+            speedup = -10;
+            cpu_controller.limit(4);
         }
         else
         {
             speedup = -10;
-            cpu_controller.limit(2);
+            cpu_controller.limit(5);
         }
             
         cost = steady_clock::now();

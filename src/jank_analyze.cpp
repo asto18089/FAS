@@ -1,5 +1,7 @@
 #include <iostream>
 #include <array>
+#include <string>
+#include <unistd.h>
 #include <numeric>
 #include <map>
 
@@ -47,7 +49,7 @@ static unsigned long find_nearest_standard_frametime(const unsigned long& curren
 }
 
 template<typename T>
-T mode(const vector<T>& v) {
+static T mode(const vector<T>& v) {
     // 创建一个map，键为元素值，值为出现次数
     std::map<T, int> m;
   
@@ -110,48 +112,58 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     standard_frametime = find_nearest_standard_frametime(standard_frametime);
     
     // std::cout << standard_frametime << '\n';
-
+    auto getFlashrate = []()
+    {
+        FILE *dumpsys = popen("dumpsys SurfaceFlinger", "r");
+        char buffer[1024] = {0};
+        int result = 0;
+        
+        while (fgets(buffer, sizeof(buffer), dumpsys))
+        {
+            std::string analyze = buffer;
+            analyze.pop_back();
+            
+            if (analyze.find("refresh-rate") != std::string::npos)
+            {
+                const size_t& pos = analyze.find(':');
+                const size_t& len = analyze.find('.', pos + 1) - pos;
+                result = stoi(analyze.substr(pos, len));
+                break;
+            }
+        }
+        
+        pclose(dumpsys);
+        return result;
+    };
+    auto ingorneMismatch = [&](unsigned long& frametime)
+    {
+        const unsigned long& flashtime = 1000 * 1000 * 1000 / getFlashrate();
+        if (standard_frametime <= flashtime)
+            return;
+            
+        const auto& high_ingorne = standard_frametime - flashtime;
+        
+        const std::string& s_highingorne = std::to_string(high_ingorne);
+        const std::string& s_lowingorne = std::to_string(flashtime);
+        const std::string& s_frametime = std::to_string(frametime);
+        
+        if (s_frametime.length() != s_highingorne.length() && s_frametime.length() != s_lowingorne.length())
+            return;
+            
+        auto same = [](const std::string& a, const std::string& b)
+        {
+            return (*a.cbegin() == *b.cbegin() && *(++a.cbegin()) == *(++b.cbegin()));
+        };
+        
+        if (same(s_frametime, s_highingorne) || same(s_frametime, s_lowingorne))
+            frametime = standard_frametime;
+    };
+    
     for (auto &i : vsync_frametime)
     {
-        switch (standard_frametime)
-            /*case FRAMETIME_30FPS:
-            {
-                if (i / 100000 == 82 || i / 1000000 == 24)
-                    i = standard_frametime;
-                break;
-            }
-            case FRAMETIME_45FPS:
-            {
-                if (i / 100000 == 82 || i / 1000000 == 24)
-                    i = standard_frametime;
-                break;
-            }*/
-            case FRAMETIME_60FPS:
-            {
-                if (i / 100000 == 82 || i / 1000000 == 24)
-                    i = standard_frametime;
-                break;
-            }
-            /*case FRAMETIME_90FPS:
-            {
-                if (i / 100000 == 82 || i / 1000000 == 24)
-                    i = standard_frametime;
-                break;
-            }
-            case FRAMETIME_120FPS:
-            {
-                if (i / 100000 == 82 || i / 1000000 == 24)
-                    i = standard_frametime;
-                break;
-            }
-            case FRAMETIME_144FPS:
-            {
-                if (i / 100000 == 82 || i / 1000000 == 24)
-                    i = standard_frametime;
-                break;
-            }*/
+        ingorneMismatch(i);
         
-        // std::cout << i << '\n';
+        std::cout << i << '\n';
         if (i > standard_frametime)
             Jdata.OOT++;
         else

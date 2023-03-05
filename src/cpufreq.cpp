@@ -17,7 +17,7 @@ Cpufreq::Cpufreq()
     limit_clear();
 }
 
-void Cpufreq::makeFreqTable(const unsigned long& freqdiff) // 建议freqdiff为100mhz
+void Cpufreq::makeFreqTable(const unsigned long& freqdiff) // 建议freqdiff为50mhz
 {
     // 读取该集群的最大和最小频率
     auto readMAM = [](const string& policyname)
