@@ -37,10 +37,12 @@ void Cpufreq::makeFreqTable(const unsigned long& freqdiff) // 建议freqdiff为1
     };
     
     unsigned long maxfreq(0), minfreq(std::numeric_limits<unsigned long>::max());
-    
-    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/"))
+ 
+    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
         const auto& policyname = entry.path().filename();
+        if (policyname == "policy0")
+            continue;
         const auto& mam = readMAM(policyname);
         
         maxfreq = std::max(maxfreq, mam.first);
@@ -64,19 +66,28 @@ void Cpufreq::makeFreqTable(const unsigned long& freqdiff) // 建议freqdiff为1
 void Cpufreq::show_super_table()
 {
     for (const auto i : SuperFreqTable)
-        std::cout << i;
+        std::cout << i << ' ';
     std::cout << '\n';
 }
 
 void Cpufreq::writeFreq()
 {
-    directory_iterator freqdir = directory_iterator("/sys/devices/system/cpu/cpufreq/");
+    directory_iterator freqdir = directory_iterator("/sys/devices/system/cpu/cpufreq");
     directory_entry end_entry;
     for (const auto& entry : freqdir) // 保存最后一个entry
         end_entry = entry;
         
+    freqdir = directory_iterator("/sys/devices/system/cpu/cpufreq");
     for (const auto& entry : freqdir)
-        entry != end_entry ? Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi - scaling]) : Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
+    {
+        if (entry.path().filename() == "policy0")
+            continue;
+            
+        if (entry != end_entry && kpi - scaling >= 0)
+            Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi - scaling]);
+        else
+            Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
+    }
 }
 
 void Cpufreq::limit(const int& change)
