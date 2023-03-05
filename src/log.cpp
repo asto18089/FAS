@@ -1,4 +1,5 @@
 #include <ctime>
+#include <iostream>
 #include "include/log.h"
 
 Log::Log(const std::string& filename) {
@@ -13,20 +14,18 @@ void Log::setLevel(LogLevel level) {
    currentLevel = level; // 设置当前日志级别 
 }
 
-template <typename T>
-void Log::write(LogLevel level, const T& message) {
-   if (level >= currentLevel) { // 如果要写入的级别大于等于当前级别，则输出到文件或控制台
+void Log::write(LogLevel level, const std::string& message) {
+   if (level >= currentLevel) {
 
-       time_t now = time(nullptr); // 获取当前时间戳
+       time_t now = time(nullptr);
        char buffer[20]; 
-       strftime(buffer, 20, "%Y-%m-%d %H:%M:%S", localtime(&now)); // 格式化时间字符串
+       strftime(buffer, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
-       file << "[" << buffer << "] [" << levelToString(level) << "] " << message << "\n"; // 写入到文件
-
-       if (level == LogLevel::Error || level == LogLevel::Warning) { // 如果是错误或警告信息，则也输出到控制台
-           std::cerr << "[" << buffer << "] [" << levelToString(level) << "] " << message << "\n";
-       }
+       file << "[" << buffer << "] [" << levelToString(level) << "] " << message << "\n";
+       std::cout << "[" << buffer << "] [" << levelToString(level) << "] " << message << "\n";
    }
+   
+   file.flush();
 }
 
 std::string Log::levelToString(LogLevel level) {

@@ -42,11 +42,13 @@ int main()
     cout.sync_with_stdio(false);
     std::cout << std::unitbuf;
 
-    Log log = Log(current_path().string + "/log.txt");
+    Log log = Log(current_path().string() + "/log.txt");
     log.setLevel(LogLevel::Info);
-
+    log.write(LogLevel::Info, "Log started");
+    
     Cpufreq cpu_controller;
-    log.write(LogLevel::Info, "Creating virtual frequency:")
+    log.write(LogLevel::Info, "Creating virtual frequency:");
+    
     for (const auto& i : cpu_controller.get_super_table())
         log.write(LogLevel::Info, "Virtual Freq: " + std::to_string(i));
     log.write(LogLevel::Info, "The virtual frequency table was created successfully");
@@ -54,7 +56,7 @@ int main()
     cpu_controller.set_scaling(2);
 
     start_close_others();
-    log.write(LogLevel::Info, "The cleanup process starts")
+    log.write(LogLevel::Info, "The cleanup process starts");
 
     auto cost = steady_clock::now();
     int speedup = 0;
@@ -85,8 +87,8 @@ int main()
         }
 
         /* nice是超时帧占所有帧的百分率 */
-
-        cout << jdata.nice() << '\n';
+        log.write(LogLevel::Debug, std::to_string(jdata.nice()));
+        
         auto niceFreq = [&](const double& left, const double& right)
         {
             const double& nice = jdata.nice();
