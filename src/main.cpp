@@ -65,7 +65,7 @@ int main()
             else
                 sleep_for(realtime);
         };
-        sleep_dynamic(100);
+        sleep_dynamic(125);
         
         const jank_data jdata = analyzeFrameData(getOriginalData());
         if (jdata.empty())
@@ -76,32 +76,36 @@ int main()
 
         /* nice是超时帧占所有帧的百分率 */
 
-        // cout << jdata.nice() << endl;
-        
-        if (jdata.nice() >= 0.02 && jdata.nice() <= 0.04) // 掉帧刚刚好
+        cout << jdata.nice() << '\n';
+        auto niceFreq = [&](const double& left, const double& right)
         {
-            speedup = -20;
-        }
-        else if (jdata.nice() < 0.02) // 掉帧少了，有余量
-        {
-            speedup = 5;
-            cpu_controller.limit(-1);
-        }
-        else if (jdata.nice() <= 0.05) // 掉帧多了，卡顿
-        {
-            speedup = 10;
-            cpu_controller.limit(3);
-        }
-        else if (jdata.nice() <= 0.08)
-        {
-            speedup = -10;
-            cpu_controller.limit(4);
-        }
-        else
-        {
-            speedup = -10;
-            cpu_controller.limit(5);
-        }
+            const double& nice = jdata.nice();
+            if (nice >= left && nice <= right) // 掉帧刚刚好
+            {
+                speedup = -20;
+            }
+            else if (nice < left) // 掉帧少了，有余量
+            {
+                speedup = 5;
+                cpu_controller.limit(-1);
+            }
+            else if (nice <= right * 11 / 10) // 掉帧多了，卡顿
+            {
+                speedup = 10;
+                cpu_controller.limit(3);
+            }
+            else if (nice <= right * 12 / 10)
+            {
+                speedup = -10;
+                cpu_controller.limit(4);
+            }
+            else
+            {
+                speedup = -10;
+                cpu_controller.limit(5);
+            }
+        };
+        niceFreq(0.01, 0.015);
             
         cost = steady_clock::now();
     }
