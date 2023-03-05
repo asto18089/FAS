@@ -2,11 +2,14 @@
 #include <array>
 #include <string>
 #include <unistd.h>
+#include <chrono>
 #include <numeric>
 #include <map>
 
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
+
+using namespace std::chrono;
 
 enum FRAMETIMES {
     FRAMETIME_30FPS = 1000 * 1000 * 1000 / 30,
@@ -114,9 +117,14 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     // std::cout << standard_frametime << '\n';
     auto getFlashrate = []()
     {
+        static int result = 0;
+        
+        static auto stamp = steady_clock::now();
+        if (duration_cast<milliseconds>(steady_clock::now() - stamp) < seconds(1) && result != 0)
+            return result;
+        
         FILE *dumpsys = popen("dumpsys SurfaceFlinger", "r");
         char buffer[1024] = {0};
-        int result = 0;
         
         while (fgets(buffer, sizeof(buffer), dumpsys))
         {
@@ -133,6 +141,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         }
         
         pclose(dumpsys);
+        stamp = steady_clock::now();
+        
         return result;
     };
     auto ingorneMismatch = [&](unsigned long& frametime)
