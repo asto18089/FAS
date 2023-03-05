@@ -40,6 +40,7 @@ int main()
     cout.sync_with_stdio(false);
 
     Cpufreq cpu_controller;
+    cpu_controller.show_super_table();
     cpu_controller.set_scaling(2);
 
     start_close_others();

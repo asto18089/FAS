@@ -1,223 +1,105 @@
-#include <iostream>
-#include <algorithm>
-#include <fstream>
-#include <sstream>
 #include <string>
-#include <stringview>
+#include <sstream>
 #include <filesystem>
-#include <charconv>
+#include <iostream>
+#include <fstream>
 
 #include "include/cpufreq.h"
 #include "include/lockvalue.h"
 
-using std::cout;
-using std::endl;
 using std::string;
-
+using std::vector;
 using namespace std::filesystem;
 
 Cpufreq::Cpufreq()
 {
-    getFreq();
-    middle_cpu_table.reserve(20);
-    big_cpu_table.reserve(20);
+    makeFreqTable(100000);
+    limit_clear();
 }
 
-void Cpufreq::getFreq()
+void Cpufreq::makeFreqTable(const unsigned long& freqdiff) // 建议freqdiff为100mhz
 {
-    map<size_t, vector<unsigned long>> freqtables;
-
-    // 定义一个辅助函数来读取频率表并排序
-    auto readAndSortFreq = [](const std::string_view& filename)
+    // 读取该集群的最大和最小频率
+    auto readMAM = [](const string& policyname)
     {
-        std::ifstream list;
-        string freq;
-        vector<unsigned long> table;
-
-        list.open(filename);
-        std::getline(list, freq);
-        list.close();
-
-        std::istringstream iss(freq);
-        while (iss >> freq)
-        {
-            table.push_back(std::stol(freq));
-        }
-        // 频率从大到小
-        std::sort(table.begin(), table.end(), std::greater<>());
-
-        return table;
+        unsigned long max(0), min(0);
+        std::ifstream fd;
+        
+        fd.open("/sys/devices/system/cpu/cpufreq/" + policyname + "/cpuinfo_max_freq");
+        fd >> max;
+        fd.close();
+        
+        fd.open("/sys/devices/system/cpu/cpufreq/" + policyname + "/cpuinfo_min_freq");
+        fd >> min;
+        fd.close();
+        
+        return std::pair{max, min};
     };
-
-    size_t policy_it = 0;
-    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/")) // 读取频率表
+    
+    unsigned long maxfreq(0), minfreq(std::numeric_limits<unsigned long>::max());
+    
+    for (const auto& entry : directory_iterator("/sys/devices/system/cpu/cpufreq/"))
     {
         const auto& policyname = entry.path().filename();
-
-        if (policyname == "policy0") // 忽略小核
-            continue;
+        const auto& mam = readMAM(policyname);
         
-        freqtables[policy_it] = readAndSortFreq(entry.path().string() + "/scaling_available_frequencies");
-        policy_it++;
+        maxfreq = std::max(maxfreq, mam.first);
+        minfreq = std::min(minfreq, mam.second);
     }
-
-    size_t map_size = 0;
-    for (const auto& [policy, table] : freqtables)
+    
+    // 创建超级频率表(用于控制所有集群)
+    auto makeSuperFreqTable = [&](const unsigned long& freqdiff)
     {
-        (table.size() > map_size) && (map_size = table.size());
-    }
+        vector<unsigned long> freqtable;
+        
+        for (unsigned long freq = maxfreq; freq >= minfreq; freq -= freqdiff)
+            freqtable.push_back(freq);
 
-    // 获取最小的最大频率
-    unsigned long min_maxFreq = 0;
-    for (const auto& [key, table] : freqtables)
-        *table.cbegin() < freq_temp && (min_maxFreq = *table.cbegin());
-
-    // 获取该频率表距指定频率最近的频率的下标
-    auto kpi_closest = [&](const vector<unsigned long>& v)
-    {
-        for (const auto& i = v.cbegin(); i < v.cend() - 1; i++)
-        {
-            if (*(i + 1) <= min_maxFreq)
-                return (size_t)(i - v.cbegin());
-        }
-
-        return (size_t)v.size();
+        return freqtable; // 返回向量作为结果
     };
     
-    vector<size_t> kpi_l;
-    for (const auto& [policy, table] : freqtables)
-        kpi_l.push_back(kpi_closest(table));
-
-    size_t& kpi_l_max = (std::max_element(kpi_l.cbegin(), kpi_l.cend()) - kpi_l.cbegin());
-    
-    for (size_t i = 0; i < map_size; i++)
-    {
-        for (size_t it = 0; i < freqtable.size(); i++)
-        {
-            
-        }
-    }
+    SuperFreqTable = makeSuperFreqTable(freqdiff);
 }
 
-void Cpufreq::getFreq()
+void Cpufreq::show_super_table()
 {
-    // 定义一个辅助函数来读取频率表并排序
-    auto readAndSortFreq = [](const std::string& filename, std::vector<unsigned long>& table)
-    {
-        std::ifstream list;
-        std::string freq;
-
-        list.open(filename);
-        std::getline(list, freq);
-        list.close();
-
-        std::istringstream iss(freq);
-        while (iss >> freq)
-        {
-            table.push_back(std::stol(freq));
-        }
-        // 频率从大到小
-        std::sort(table.begin(), table.end(), std::greater<>());
-    };
-    
-    readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies", middle_cpu_table);
-    if (middle_cpu_table.empty()) {
-        readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy3/scaling_available_frequencies", middle_cpu_table);
-    }
-    
-    readAndSortFreq("/sys/devices/system/cpu/cpufreq/policy7/scaling_available_frequencies", big_cpu_table);
-
-    // 处理频率偏移
-    for (kpi_min = 0; kpi_min < std::min(big_cpu_table.size(), middle_cpu_table.size()); kpi_min++)
-    {
-        if (big_cpu_table[kpi_min + 1] < middle_cpu_table[0])
-            break;
-    }
-    kpi_min = -kpi_min;
+    for (const auto i : SuperFreqTable)
+        std::cout << i;
+    std::cout << '\n';
 }
 
-void Cpufreq::show_middle_table()
+void Cpufreq::writeFreq()
 {
-    for (const auto &i : middle_cpu_table)
-        cout << i << ' ';
-    cout << '\n';
+    directory_iterator freqdir = directory_iterator("/sys/devices/system/cpu/cpufreq/");
+    directory_entry end_entry;
+    for (const auto& entry : freqdir) // 保存最后一个entry
+        end_entry = entry;
+        
+    for (const auto& entry : freqdir)
+        entry != end_entry ? Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi - scaling]) : Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
 }
 
-void Cpufreq::show_big_table()
+void Cpufreq::limit(const int& change)
 {
-    for (const auto &i : big_cpu_table)
-        cout << i << ' ';
-    cout << '\n';
-}
-
-void Cpufreq::Cpu_big_limit()
-{
-    static int tmp = 666, target = 999;
-
-    if (kpi - kpi_min - scaling < 0)
-        target = 0;
-    else if (kpi - kpi_min - scaling <= big_cpu_table.size())
-        target = kpi - kpi_min - scaling;
+    if (kpi + change >= 0 && kpi < 0)
+        kpi = kpi + change;
     else
-        target = big_cpu_table.size();
-
-    if (tmp != target)
-    {
-        Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq", big_cpu_table[target]);
-        Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq", big_cpu_table[target]);
-    }
-    tmp = target;
-    // cout << "大核target："<< *target <<  "kpi:" << kpi << endl;
-}
-
-void Cpufreq::Cpu_middle_limit()
-{
-    static size_t tmp = 666, target = 999;
-
-    if (kpi < 0)
-        target = 0;
-    else if (kpi <= middle_cpu_table.size())
-        target = kpi;
+        kpi = 0;
+    if (kpi + change <= SuperFreqTable.size() && change > 0)
+        kpi = kpi + change;
     else
-        target = middle_cpu_table.size();
-
-    if (tmp != target)
-    {
-        Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq", middle_cpu_table[target]);
-        Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", middle_cpu_table[target]);
-    }
-    tmp = target;
-    // cout << "中核target：" << *target <<  "kpi:" << kpi << endl;
+        kpi = SuperFreqTable.size();
+        
+    writeFreq();
 }
 
 void Cpufreq::limit_clear()
 {
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq", *big_cpu_table.cbegin());
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq", *middle_cpu_table.cbegin());
-    Lockvalue("/sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq", *middle_cpu_table.cbegin());
+    kpi = 0;
+    writeFreq();
 }
 
-void Cpufreq::limit(const int &n)
+void Cpufreq::set_scaling(const int& new_scaling)
 {
-    if (n < 0)
-    {
-        if (kpi - n <= std::min(big_cpu_table.size(), middle_cpu_table.size()))
-            kpi = kpi - n;
-        else
-            kpi = std::min(big_cpu_table.size(), middle_cpu_table.size());
-    }
-    else if (n > 0)
-    {
-        if (kpi - n >= kpi_min)
-            kpi = kpi - n;
-        else
-            kpi = kpi_min;
-    }
-    Cpu_middle_limit();
-    Cpu_big_limit();
-}
-
-void Cpufreq::set_scaling(const int &n)
-{
-    scaling = n;
+    scaling = new_scaling;
 }
