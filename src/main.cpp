@@ -41,9 +41,10 @@ int main()
     bound2little();
     cout.sync_with_stdio(false);
     std::cout << std::unitbuf;
-
-    Log log = Log(current_path().string() + "/log.txt");
+   
+    Log log = Log("/storage/emulated/0/Android/FAS/FasLog.txt");
     log.setLevel(LogLevel::Info);
+    // log.setLevel(LogLevel::Debug);
     log.write(LogLevel::Info, "Log started");
     
     Cpufreq cpu_controller;
@@ -59,7 +60,6 @@ int main()
     log.write(LogLevel::Info, "The cleanup process starts");
 
     auto cost = steady_clock::now();
-    int speedup = 0;
     
     while (true)
     {
@@ -71,20 +71,15 @@ int main()
         
         auto sleep_dynamic = [&](const int& ms)
         {
-            const auto& realtime = milliseconds(ms) - duration_cast<milliseconds>(steady_clock::now() - cost);
-            if (realtime > milliseconds(speedup))
-                sleep_for(realtime - milliseconds(speedup));
-            else
-                sleep_for(realtime);
+            const auto& cost_time = duration_cast<milliseconds>(steady_clock::now() - cost);
+            const auto& realtime = (cost_time < milliseconds(ms)) ? (milliseconds(ms) - cost_time) : milliseconds(ms);
+            sleep_for(realtime);
         };
-        sleep_dynamic(125);
+        sleep_dynamic(100);
         
         const jank_data jdata = analyzeFrameData(getOriginalData());
         if (jdata.empty())
-        {
-            speedup = -50;
             continue;
-        }
 
         /* nice是超时帧占所有帧的百分率 */
         log.write(LogLevel::Debug, std::to_string(jdata.nice()));
@@ -92,28 +87,31 @@ int main()
         auto niceFreq = [&](const double& left, const double& right)
         {
             const double& nice = jdata.nice();
-            if (nice >= left && nice <= right) // 掉帧刚刚好
+            if (nice >= left && nice <= right)
             {
-                speedup = -20;
+                log.write(LogLevel::Debug, "The proportion of frame delay is in line with expectations");
+                return;
             }
-            else if (nice < left) // 掉帧少了，有余量
+            if (nice < left) // 掉帧少了，有余量
             {
-                speedup = 5;
                 cpu_controller.limit(-1);
+                log.write(LogLevel::Debug, "The proportion of frame delay is less than expectations");
+                return;
             }
-            else if (nice <= right * 11 / 10) // 掉帧多了，卡顿
+            log.write(LogLevel::Debug, "The proportion of frame delay is higher than expected");
+            if (nice <= right * 11 / 10) // 掉帧多了，卡顿
             {
-                speedup = 10;
+                log.write(LogLevel::Debug, "Exceeded Expectation Rating : 1");
                 cpu_controller.limit(3);
             }
             else if (nice <= right * 12 / 10)
             {
-                speedup = -10;
+                log.write(LogLevel::Debug, "Exceeded Expectation Rating : 2");
                 cpu_controller.limit(4);
             }
             else
             {
-                speedup = -10;
+                log.write(LogLevel::Debug, "Exceeded Expectation Rating : 3");
                 cpu_controller.limit(5);
             }
         };

@@ -101,9 +101,7 @@ FtimeStamps getOriginalData()
 
         if (it != timestamps.end())
         {
-            Fdata.start_time_stamps.clear();
-            Fdata.vsync_time_stamps.clear();
-            Fdata.end_time_stamps.clear();
+            continue;
         }
         else
         {
