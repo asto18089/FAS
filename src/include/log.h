@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
 
 enum class LogLevel {
     Debug,
@@ -16,9 +15,9 @@ public:
     Log(const std::string& filename);
     ~Log();
     void setLevel(LogLevel level);
-    void write(LogLevel level, const std::string& message);
+    void write(LogLevel level, const char* message);
 private:
     std::ofstream file;
     LogLevel currentLevel;
-    std::string levelToString(LogLevel level);
+    static const char* levelToString(LogLevel level);
 };

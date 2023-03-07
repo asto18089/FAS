@@ -2,6 +2,7 @@
 #include <charconv>
 #include <string_view>
 #include <array>
+#include <algorithm>
 
 #include "include/frame_analyze.h"
 
@@ -81,12 +82,12 @@ FtimeStamps getOriginalData()
 
         for (size_t pos = 0, i = 0; pos < analyze.length();)
         {
-            pos = std::find_if_not(analyze.begin() + pos, analyze.end(), [](char c) { return !std::isdigit(c); }) - analyze.begin();
+            pos = std::find_if_not(analyze.cbegin() + pos, analyze.cend(), [](char c) { return !std::isdigit(c); }) - analyze.cbegin();
             
             if (pos == analyze.length())
                 break;
 
-            size_t end = std::find_if_not(analyze.begin() + pos + 1, analyze.end(), [](char c) { return std::isdigit(c); }) - analyze.begin();
+            size_t end = std::find_if_not(analyze.cbegin() + pos + 1, analyze.cend(), [](char c) { return std::isdigit(c); }) - analyze.cbegin();
     
             if (i < timestamps.size())
                 std::from_chars(analyze.data() + pos, analyze.data() + end, timestamps[i]);
@@ -97,12 +98,10 @@ FtimeStamps getOriginalData()
 
         // 等于 0 或大于等于 10000000000000000
         auto pred = [](const auto &i) { return i == 0 || i >= 10000000000000000; };
-        auto it = std::find_if(timestamps.begin(), timestamps.end(), pred);
+        auto it = std::find_if(timestamps.cbegin(), timestamps.cend(), pred);
 
-        if (it != timestamps.end())
-        {
+        if (it != timestamps.cend())
             continue;
-        }
         else
         {
             Fdata.start_time_stamps.push_back(timestamps[0]);

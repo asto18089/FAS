@@ -21,7 +21,7 @@ static void close_others()
         Lockvalue("/sys/kernel/fpsgo/common/fpsgo_enable", 0);
         Lockvalue("/sys/module/perfmgr/parameters/perfmgr_enable", 0);
         Lockvalue("/sys/module/perfmgr_policy/parameters/perfmgr_enable", 0);
-        sleep_for(seconds(5));
+        sleep_for(5s);
     }
 }
 
