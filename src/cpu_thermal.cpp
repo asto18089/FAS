@@ -84,7 +84,6 @@ Cputhermal::Cputhermal()
     };
     
     this->SuperFreqTable = makeSuperFreqTable(freqdiff);
-    inline_freq = *SuperFreqTable.cbegin()
     
     std::thread tempmonitor(Cputhermal::temp_monitor, temp_node, std::ref(this->temp));
     tempmonitor.detach();
@@ -98,12 +97,22 @@ void Cputhermal::temp_monitor(string temp_node, int& temp)
     while (true)
     {
         sleep_for(millionseconds(50));
+        
         temp_fd.open(temp_node);
-        temp_fd >> temp;
+        temp_fd >> temp;        
         temp_fd.close();
-        
-        if ()
-        
-        
     }
+}
+
+void Cputhermal::thermal_freqwriter(const unsigned long& freq)
+{
+    if (this->temp >= this->target_temp && kpi < SuperFreqTable.size())
+        kpi++;
+    else if (this->temp < this->target_temp)
+        kpi = 0;
+            
+    inline_freq = SuperFreqTable[kpi];
+    
+    const auto& w_freq = inline_freq > freq ? freq : inline_freq;
+    
 }

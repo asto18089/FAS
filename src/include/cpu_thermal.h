@@ -9,6 +9,7 @@ class Cputhermal
     std::vector<unsigned long> SuperFreqTable;
     int cpu_temp = 0;
     int target_temp = 75;
+    int kpi = 0;
     unsigned long inline_freq = 0;
     std::string temp_node;
     static void temp_monitor(std::string, int&);
