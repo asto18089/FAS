@@ -8,15 +8,15 @@ using std::vector;
 
 struct FtimeStamps
 {
-    vector<unsigned long> start_time_stamps;
-    vector<unsigned long> vsync_time_stamps;
-    vector<unsigned long> end_time_stamps;
+    vector<unsigned long> start_timestamps;
+    vector<unsigned long> vsync_timestamps;
+    vector<unsigned long> end_timestamps;
 
     FtimeStamps()
     {
-        start_time_stamps.reserve(10);
-        vsync_time_stamps.reserve(10);
-        end_time_stamps.reserve(10);
+        start_timestamps.reserve(10);
+        vsync_timestamps.reserve(10);
+        end_timestamps.reserve(10);
     }
 };
 

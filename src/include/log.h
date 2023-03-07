@@ -13,7 +13,6 @@ enum class LogLevel {
 class Log {
 public:
     Log(const std::string& filename);
-    ~Log();
     void setLevel(LogLevel level);
     void write(LogLevel level, const char* message);
 private:

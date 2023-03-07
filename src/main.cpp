@@ -79,13 +79,11 @@ int main()
         /* nice是超时帧占所有帧的百分率 */
         log.write(LogLevel::Debug, std::to_string(jdata.nice()).c_str());
 
-        double nice = jdata.nice();
+        const double nice = jdata.nice();
         constexpr double left = 0.01;
         constexpr double right = 0.015;
         if (nice >= left && nice <= right)
-        {
             log.write(LogLevel::Debug, "The proportion of frame delay is in line with expectations");
-        }
         else if (nice < left) // 掉帧少了，有余量
         {
             cpu_controller.limit(-1);

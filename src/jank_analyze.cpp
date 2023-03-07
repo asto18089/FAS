@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <chrono>
 #include <numeric>
-#include <map>
+#include <unordered_map>
 #include <string_view>
 #include <charconv>
 
@@ -24,7 +24,7 @@ constexpr std::array<unsigned int, 6> STANDARD_FRAMETIMES{FRAMETIME_30FPS, FRAME
 
 static unsigned long find_nearest_standard_frametime(unsigned long current_frametime)
 {
-    size_t left = 0, right = STANDARD_FRAMETIMES.size() - 1, mid;
+    size_t left = 0, right = STANDARD_FRAMETIMES.size() - 1, mid = 0;
 
     while (left <= right)
     {
@@ -56,10 +56,10 @@ static unsigned long find_nearest_standard_frametime(unsigned long current_frame
 template <typename T>
 static T mode(const vector<T> &v)
 {
-    // 创建一个map，键为元素值，值为出现次数
-    std::map<T, int> m;
+    // 创建一个unordered_map，键为元素值，值为出现次数
+    std::unordered_map<T, int> m;
 
-    // 遍历vector，更新map中的计数
+    // 遍历vector，更新unordered_map中的计数
     for (const auto &x : v)
         m[x / (1000 * 1000)]++;
 
@@ -67,7 +67,7 @@ static T mode(const vector<T> &v)
     T mode = v[0];
     int max_count = m[v[0]];
 
-    // 遍历map，找到最大次数对应的元素
+    // 遍历unordered_map，找到最大次数对应的元素
     for (const auto &p : m)
     {
         if (p.second > max_count)
@@ -93,14 +93,14 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 {
     jank_data Jdata;
 
-    if (Fdata.vsync_time_stamps.size() < 4)
+    if (Fdata.vsync_timestamps.size() < 4)
     {
         Jdata.empty_private = true;
         return Jdata;
     }
 
-    auto vsync_begin = Fdata.vsync_time_stamps.cbegin();
-    auto vsync_end = Fdata.vsync_time_stamps.cend();
+    auto vsync_begin = Fdata.vsync_timestamps.cbegin();
+    auto vsync_end = Fdata.vsync_timestamps.cend();
 
     vector<unsigned long> vsync_frametime;
     static unsigned long standard_frametime;
@@ -137,11 +137,11 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
         while (fgets(buffer, sizeof(buffer), dumpsys))
         {
-            std::string_view analyze = buffer;
+            const std::string_view analyze = buffer;
             if (analyze.find("refresh-rate") != std::string_view::npos)
             {
-                size_t start = analyze.find(':') + 1;
-                size_t end = analyze.find('.', start + 1);
+                const size_t start = analyze.find(':') + 1;
+                const size_t end = analyze.find('.', start + 1);
                 std::from_chars(analyze.data() + start, analyze.data() + end, result);
                 break;
             }
@@ -152,35 +152,31 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
         return result;
     };
-    auto ignoreMismatch = [&](unsigned long &frametime)
-    {
-        unsigned long flashtime = 1000 * 1000 * 1000 / getRefreshRate();
-        if (standard_frametime <= flashtime)
-            return;
-
-        unsigned long high_ignore = standard_frametime * 2 - flashtime;
-
-        const std::string &s_highignore = std::to_string(high_ignore);
-        const std::string &s_lowignore = std::to_string(flashtime);
-        const std::string &s_frametime = std::to_string(frametime);
-
-        if (s_frametime.length() != s_highignore.length() && s_frametime.length() != s_lowignore.length())
-            return;
-
-        auto same = [](const std::string &a, const std::string &b)
-        {
-            if (a.length() <= 7)
-                return (*a.cbegin() == *b.cbegin());
-            return (*a.cbegin() == *b.cbegin() && *(++a.cbegin()) == *(++b.cbegin()));
-        };
-
-        if (same(s_frametime, s_highignore) || same(s_frametime, s_lowignore))
-            frametime = standard_frametime;
-    };
 
     for (auto &i : vsync_frametime)
     {
-        ignoreMismatch(i);
+        const unsigned long flashtime = 1000 * 1000 * 1000 / getRefreshRate();
+        if (standard_frametime > flashtime)
+        {
+            const unsigned long high_ignore = standard_frametime * 2 - flashtime;
+
+            const std::string s_highignore = std::to_string(high_ignore);
+            const std::string s_lowignore = std::to_string(flashtime);
+            const std::string s_frametime = std::to_string(i);
+
+            if (s_frametime.length() == s_highignore.length() || s_frametime.length() == s_lowignore.length())
+            {
+                auto same = [](const std::string &a, const std::string &b)
+                {
+                    if (a.length() <= 7)
+                        return (*a.cbegin() == *b.cbegin());
+                    return (*a.cbegin() == *b.cbegin() && *(++a.cbegin()) == *(++b.cbegin()));
+                };
+
+                if (same(s_frametime, s_highignore) || same(s_frametime, s_lowignore))
+                    i = standard_frametime;
+            }
+        }
 
         // std::cout << i << '\n';
         if (i > standard_frametime)
