@@ -108,7 +108,6 @@ int main()
                 cpu_controller.limit(5);
             }
         }
-
         cost = steady_clock::now();
     }
 }
