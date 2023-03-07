@@ -99,7 +99,14 @@ void Cpufreq::writeFreq()
 
 void Cpufreq::limit(const int& change_in)
 {
-    const int& change = -change_in;
+    int change;
+    if (kpi <= SuperFreqTable.size() * 2 / 10)
+        change = -change_in / 2;
+    else if (kpi <= SuperFreqTable.size() * 4 / 10)
+        change = -change_in * 2 / 3;
+    else
+        change = -change_in;
+        
     if (change < 0)
     {
         if (kpi + change >= 0)

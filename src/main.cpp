@@ -85,31 +85,31 @@ int main()
         if (nice >= left && nice <= right)
         {
             log.write(LogLevel::Debug, "The proportion of frame delay is in line with expectations");
-            return;
         }
-        if (nice < left) // 掉帧少了，有余量
+        else if (nice < left) // 掉帧少了，有余量
         {
             cpu_controller.limit(-1);
             log.write(LogLevel::Debug, "The proportion of frame delay is less than expectations");
-            return;
-        }
-        log.write(LogLevel::Debug, "The proportion of frame delay is higher than expected");
-        if (nice <= right * 11 / 10) // 掉帧多了，卡顿
-        {
-            log.write(LogLevel::Debug, "Exceeded Expectation Rating : 1");
-            cpu_controller.limit(3);
-        }
-        else if (nice <= right * 12 / 10)
-        {
-            log.write(LogLevel::Debug, "Exceeded Expectation Rating : 2");
-            cpu_controller.limit(4);
         }
         else
         {
-            log.write(LogLevel::Debug, "Exceeded Expectation Rating : 3");
-            cpu_controller.limit(5);
+            log.write(LogLevel::Debug, "The proportion of frame delay is higher than expected");
+            if (nice <= right * 11 / 10) // 掉帧多了，卡顿
+            {
+                log.write(LogLevel::Debug, "Exceeded Expectation Rating : 1");
+                cpu_controller.limit(3);
+            }
+            else if (nice <= right * 12 / 10)
+            {
+                log.write(LogLevel::Debug, "Exceeded Expectation Rating : 2");
+                cpu_controller.limit(4);
+            }
+            else
+            {
+                log.write(LogLevel::Debug, "Exceeded Expectation Rating : 3");
+                cpu_controller.limit(5);
+            }
         }
-
         cost = steady_clock::now();
     }
 }
