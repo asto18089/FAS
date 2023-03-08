@@ -18,22 +18,22 @@ using namespace std::chrono;
 
 Cputhermal::Cputhermal()
 {
-    const array<const char*, 5> TYPENAMES = {"soc_max", "soc_top", "cpu_big", "soc", "cpu"};
-    
-    auto node_finder = [&](const char* type)
+    const array<const string, 5> TYPENAMES = {"soc_max", "soc_top", "cpu_big", "soc", "cpu"};
+    auto node_finder = [&](const string& type)
     {
         for (const auto& entry : directory_iterator("/sys/devices/virtual/thermal"))
         {
             if (! entry.is_directory())
                 continue;       
-                
+            
             const path& type_file = entry.path() / "type";
             if (exists(type_file) && is_regular_file(type_file))
             {
                 std::ifstream ifs(type_file);
                 string content;
-                std::getline(ifs, content);
-                if (content.find(type))
+                ifs >> content;
+                ifs.close();
+                if (content.find(type) != string::npos)
                 {
                     temp_node = entry.path() / "temp";
                     return true;
@@ -43,7 +43,7 @@ Cputhermal::Cputhermal()
         return false;
     };
     
-    for (const auto& i : TYPENAMES)
+    for (const string& i : TYPENAMES)
     {
         if (node_finder(i))
             break;
@@ -100,12 +100,15 @@ void Cputhermal::temp_policy()
     
     Cputhermal& thermal = Cputhermal::getCputhermal();
     std::ifstream temp_fd;
+    int temp;
     while (true)
     {
         sleep_for(milliseconds(50));
         
         temp_fd.open(thermal.temp_node);
-        temp_fd >> thermal.temp;
+        temp_fd >> temp;
+        thermal.temp = temp / 1000;
+        std::cout << thermal.temp << '\n';
         
         if (thermal.temp >= thermal.target_temp && thermal.kpi < thermal.SuperFreqTable.size())
             thermal.kpi++;

@@ -15,7 +15,7 @@ class Cputhermal
     Cputhermal();
 public:
     static Cputhermal& getCputhermal() {
-        static Cputhermal instance;
+        static Cputhermal instance = Cputhermal();
         return instance;
     }
     static void temp_policy();
