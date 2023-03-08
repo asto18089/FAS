@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <charconv>
-#include <string_view>
 #include <array>
 #include <algorithm>
 
@@ -40,7 +39,6 @@ string getSurfaceview()
 FtimeStamps getOriginalData()
 {
     FtimeStamps Fdata;
-
     const string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\' 2>/dev/null";
     FILE *dumpsys = popen(cmd.c_str(), "r");
 
@@ -53,13 +51,13 @@ FtimeStamps getOriginalData()
     }
 
     char buffer[1024] = {0};
-    static std::string_view analyze;
-    static string analyze_last, analyze_last_t;
-
+    static string analyze, analyze_last;
+    
     while (std::fgets(buffer, sizeof(buffer), dumpsys))
     {
         static std::array<unsigned long, 3> timestamps = {0};
         analyze = buffer;
+        analyze.pop_back();
 
         if (analyze_last == analyze && !analyze_last.empty())
         {
@@ -102,11 +100,8 @@ FtimeStamps getOriginalData()
             Fdata.end_timestamps.push_back(timestamps[2]);
         }
 
-        analyze_last_t = analyze;
+        analyze_last = analyze;
     }
-
-    analyze_last = std::move(analyze_last_t);
-
     pclose(dumpsys);
     return Fdata;
 }

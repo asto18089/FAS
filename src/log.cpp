@@ -12,7 +12,8 @@ void Log::setLevel(LogLevel level) {
 }
 
 void Log::write(LogLevel level, const char* message) {
-   if (level >= currentLevel) {
+   if (level >= currentLevel)
+   {
        const time_t now = time(nullptr);
        char buffer[20]; 
        strftime(buffer, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
@@ -20,10 +21,12 @@ void Log::write(LogLevel level, const char* message) {
        file << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
        std::cout << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
    }
+   file.flush();
 }
 
 const char* Log::levelToString(LogLevel level) {
-    switch (level) { 
+    switch (level)
+    { 
         case LogLevel::Debug: return "DEBUG";
         case LogLevel::Info: return "INFO";
         case LogLevel::Warning: return "WARNING";

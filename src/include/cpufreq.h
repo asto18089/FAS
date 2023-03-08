@@ -16,7 +16,6 @@ public:
         static Cpufreq instance;
         return instance;
     }
-    Cpufreq(const Cpufreq &) = delete; // dont copy this
     vector<unsigned long> get_super_table();
     void limit(const int);
     void limit_clear();

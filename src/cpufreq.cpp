@@ -6,6 +6,7 @@
 
 #include "include/cpufreq.h"
 #include "include/cpu_thermal.h"
+#include "include/lockvalue.h"
 
 using std::string;
 using std::vector;
@@ -70,23 +71,21 @@ vector<unsigned long> Cpufreq::get_super_table()
 
 void Cpufreq::writeFreq()
 {
-    directory_iterator freqdir = directory_iterator("/sys/devices/system/cpu/cpufreq");
     directory_entry end_entry;
-    for (const auto &entry : freqdir) // 保存最后一个entry
+    for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq")) // 保存最后一个entry
         end_entry = entry;
 
-    freqdir = directory_iterator("/sys/devices/system/cpu/cpufreq");
-    for (const auto &entry : freqdir)
+    for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
         if (entry.path().filename() == "policy0")
             continue;
 
         if (entry != end_entry)
         {
-            if (kpi + scaling < SuperFreqTable.size())
+            if (kpi + scaling <= SuperFreqTable.size() - 1)
                 Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi + scaling]);
             else
-                Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", *SuperFreqTable.cend());
+                Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", *SuperFreqTable.cend() - 1);
         }
         else
             Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
@@ -97,14 +96,7 @@ void Cpufreq::writeFreq()
 
 void Cpufreq::limit(const int change_in)
 {
-    int change;
-    if (kpi <= SuperFreqTable.size() * 2 / 10)
-        change = -change_in / 2;
-    else if (kpi <= SuperFreqTable.size() * 4 / 10)
-        change = -change_in * 2 / 3;
-    else
-        change = -change_in;
-        
+    const int& change = -change_in;  
     if (change < 0)
     {
         if (kpi + change >= 0)
@@ -133,13 +125,15 @@ void Cpufreq::limit_clear()
 
         fd.open("/sys/devices/system/cpu/cpufreq/" + policyname + "/cpuinfo_max_freq");
         fd >> max;
+        
+        fd.close();
         return max;
     };
 
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
         const string &policyname = entry.path().filename();
-        Cputhermal::TLockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
+        Lockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
     }
 }
 

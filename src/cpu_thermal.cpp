@@ -103,18 +103,20 @@ void Cputhermal::temp_policy()
     int temp;
     while (true)
     {
-        sleep_for(milliseconds(50));
+        sleep_for(10ms);
         
         temp_fd.open(thermal.temp_node);
         temp_fd >> temp;
         thermal.temp = temp / 1000;
-        std::cout << thermal.temp << '\n';
         
-        if (thermal.temp >= thermal.target_temp && thermal.kpi < thermal.SuperFreqTable.size())
+        if (thermal.temp >= thermal.target_temp && thermal.kpi < thermal.SuperFreqTable.size() - 1)
             thermal.kpi++;
         else if (thermal.temp < thermal.target_temp)
             thermal.kpi = 0;
         
+        Cputhermal& thermal = Cputhermal::getCputhermal();
+    const unsigned long& w_freq = std::min(thermal.inline_freq, freq);
+    Lockvalue(location, w_freq);
         thermal.inline_freq = thermal.SuperFreqTable[thermal.kpi];
         temp_fd.close();
     }
@@ -123,8 +125,8 @@ void Cputhermal::temp_policy()
 void Cputhermal::TLockvalue(const string& location, const unsigned long& freq)
 {
     Cputhermal& thermal = Cputhermal::getCputhermal();
-    const auto& w_freq = thermal.inline_freq > freq ? freq : thermal.inline_freq;
-    Lockvalue(location + "/scaling_max_freq", w_freq);
+    const unsigned long& w_freq = std::min(thermal.inline_freq, freq);
+    Lockvalue(location, w_freq);
 }
 
 void Cputhermal::set_target_temp(const int& temp)

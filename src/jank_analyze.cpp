@@ -152,10 +152,10 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
         return result;
     };
-
+    
+    unsigned long flashtime = 1000 * 1000 * 1000 / getRefreshRate();
     for (auto &i : vsync_frametime)
     {
-        const unsigned long flashtime = 1000 * 1000 * 1000 / getRefreshRate();
         if (standard_frametime > flashtime)
         {
             const unsigned long high_ignore = standard_frametime * 2 - flashtime;
@@ -184,7 +184,6 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         else
             Jdata.LOT++;
     }
-
     return Jdata;
 }
 

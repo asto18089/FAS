@@ -11,8 +11,12 @@ enum class LogLevel {
 };
 
 class Log {
-public:
     Log(const std::string& filename);
+public:
+    static Log& getLog(const std::string& filename) {
+        static Log instance = Log(filename);
+        return instance;
+    }
     void setLevel(LogLevel level);
     void write(LogLevel level, const char* message);
 private:
