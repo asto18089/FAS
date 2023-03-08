@@ -58,7 +58,7 @@ static string getTopapp()
         return result;
     }
 
-    FILE *app = popen("dumpsys activity activities|grep topResumedActivity=|tail -n 1|cut -d \"{\" -f2|cut -d \"/\" -f1|cut -d \" \" -f3", "r");
+    FILE *app = popen(R"(dumpsys activity activities|grep topResumedActivity=|tail -n 1|cut -d "{" -f2|cut -d "/" -f1|cut -d " " -f3)", "r");
 
     char buffer[1024] = {0};
 
@@ -113,8 +113,8 @@ int main()
         }
 
         constexpr milliseconds ms(100);
-        milliseconds cost_time = duration_cast<milliseconds>(steady_clock::now() - cost);
-        milliseconds realtime = (cost_time < ms) ? (ms - cost_time) : ms;
+        const milliseconds cost_time = duration_cast<milliseconds>(steady_clock::now() - cost);
+        const milliseconds realtime = (cost_time < ms) ? (ms - cost_time) : ms;
         sleep_for(realtime);
 
         const jank_data jdata = analyzeFrameData(getOriginalData());

@@ -69,8 +69,8 @@ Cputhermal::Cputhermal()
 
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
-        const string &policyname = entry.path().filename();
-        const auto &mam = readMAM(policyname);
+        const string policyname = entry.path().filename();
+        const auto mam = readMAM(policyname);
 
         maxfreq = std::max(maxfreq, mam.first);
         minfreq = std::min(minfreq, mam.second);
@@ -99,7 +99,7 @@ void Cputhermal::temp_policy()
 
     Cputhermal &thermal = Cputhermal::getCputhermal();
     std::ifstream temp_fd;
-    int temp;
+    int temp = 0;
     while (true)
     {
         sleep_for(10ms);

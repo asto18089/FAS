@@ -153,7 +153,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         return result;
     };
 
-    unsigned long flashtime = 1000 * 1000 * 1000 / getRefreshRate();
+    const unsigned long flashtime = 1000 * 1000 * 1000 / getRefreshRate();
     for (auto &i : vsync_frametime)
     {
         if (standard_frametime > flashtime)
