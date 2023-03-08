@@ -8,6 +8,7 @@
 #include "include/lockvalue.h"
 #include "include/cpu_thermal.h"
 
+using std::string_view;
 using std::string;
 using std::array;
 using std::vector;
@@ -112,21 +113,15 @@ void Cputhermal::temp_policy()
             thermal.kpi = 0;
         
         thermal.inline_freq = thermal.SuperFreqTable[thermal.kpi];
-        
-        for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
-        {
-            const auto& freq = thermal.inline_freq > thermal.target_freq ? thermal.target_freq : thermal.inline_freq;
-            Lockvalue(entry.path().string() + "/scaling_max_freq", freq);
-        }
-        
         temp_fd.close();
     }
 }
 
-void Cputhermal::set_target_freq(const unsigned long& freq)
+void Cputhermal::TLockvalue(const string& location, const unsigned long& freq)
 {
     Cputhermal& thermal = Cputhermal::getCputhermal();
-    thermal.target_freq = freq;
+    const auto& w_freq = thermal.inline_freq > freq ? freq : thermal.inline_freq;
+    Lockvalue(location + "/scaling_max_freq", w_freq);
 }
 
 void Cputhermal::set_target_temp(const int& temp)

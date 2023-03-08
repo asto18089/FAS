@@ -11,7 +11,6 @@ class Cputhermal
     int target_temp = 75;
     int kpi = 0;
     unsigned long inline_freq = 0;
-    unsigned long target_freq = 0;
     std::string temp_node;
     Cputhermal();
 public:
@@ -20,6 +19,6 @@ public:
         return instance;
     }
     static void temp_policy();
-    static void set_target_freq(const unsigned long&);
+    static void TLockvalue(const std::string&, const unsigned long&);
     static void set_target_temp(const int&);
 };

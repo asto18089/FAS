@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include "include/cpufreq.h"
-#include "include/cputhermal.h"
+#include "include/cpu_thermal.h"
 
 using std::string;
 using std::vector;
@@ -84,12 +84,12 @@ void Cpufreq::writeFreq()
         if (entry != end_entry)
         {
             if (kpi + scaling < SuperFreqTable.size())
-                Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi + scaling]);
+                Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi + scaling]);
             else
-                Lockvalue(entry.path().string() + "/scaling_max_freq", *SuperFreqTable.cend());
+                Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", *SuperFreqTable.cend());
         }
         else
-            Lockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
+            Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
     }
     /*std::cout << kpi << ' ';
     std::cout << SuperFreqTable[kpi] << '\n';*/
@@ -139,7 +139,7 @@ void Cpufreq::limit_clear()
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
         const string &policyname = entry.path().filename();
-        Lockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
+        Cputhermal::TLockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
     }
 }
 
