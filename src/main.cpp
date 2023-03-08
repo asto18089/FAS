@@ -45,7 +45,7 @@ int main()
     // log.setLevel(LogLevel::Debug);
     log.write(LogLevel::Info, "Log started");
 
-    Cpufreq cpu_controller;
+    Cpufreq& cpu_controller = Cpufreq::getCpufreq();
     log.write(LogLevel::Info, "Creating virtual frequency:");
 
     for (const auto &i : cpu_controller.get_super_table())

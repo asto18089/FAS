@@ -5,15 +5,19 @@
 #include <array>
 #include <chrono>
 
+#include "include/lockvalue.h"
+#include "include/cpu_thermal.h"
+
 using std::string;
 using std::array;
+using std::vector;
 using namespace std::filesystem;
 using namespace std::this_thread;
 using namespace std::chrono;
 
 Cputhermal::Cputhermal()
 {
-    const array<const char*> TYPENAMES = {"soc_max", "soc_top", "cpu_big", "soc", "cpu"};
+    const array<const char*, 5> TYPENAMES = {"soc_max", "soc_top", "cpu_big", "soc", "cpu"};
     
     auto node_finder = [&](const char* type)
     {
@@ -23,12 +27,12 @@ Cputhermal::Cputhermal()
                 continue;       
                 
             const path& type_file = entry.path() / "type";
-            if (exists(type_file) && is_regular_file(type_file) && status(type_file).permissions() & perms::owner_read)
+            if (exists(type_file) && is_regular_file(type_file))
             {
                 std::ifstream ifs(type_file);
                 string content;
                 std::getline(ifs, content);
-                if (ifs.find(type))
+                if (content.find(type))
                 {
                     temp_node = entry.path() / "temp";
                     return true;
@@ -83,36 +87,50 @@ Cputhermal::Cputhermal()
         return freqtable; // 返回向量作为结果
     };
     
-    this->SuperFreqTable = makeSuperFreqTable(freqdiff);
+    this->SuperFreqTable = makeSuperFreqTable(50000);
     
-    std::thread tempmonitor(Cputhermal::temp_monitor, temp_node, std::ref(this->temp));
-    tempmonitor.detach();
+    std::thread temp_policy(Cputhermal::temp_policy);
+    temp_policy.detach();
 }
 
-void Cputhermal::temp_monitor(string temp_node, int& temp)
+void Cputhermal::temp_policy()
 {
     prctl(PR_SET_NAME, "TempWatcher");
     
+    Cputhermal& thermal = Cputhermal::getCputhermal();
     std::ifstream temp_fd;
     while (true)
     {
-        sleep_for(millionseconds(50));
+        sleep_for(milliseconds(50));
         
-        temp_fd.open(temp_node);
-        temp_fd >> temp;        
+        temp_fd.open(thermal.temp_node);
+        temp_fd >> thermal.temp;
+        
+        if (thermal.temp >= thermal.target_temp && thermal.kpi < thermal.SuperFreqTable.size())
+            thermal.kpi++;
+        else if (thermal.temp < thermal.target_temp)
+            thermal.kpi = 0;
+        
+        thermal.inline_freq = thermal.SuperFreqTable[thermal.kpi];
+        
+        for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
+        {
+            const auto& freq = thermal.inline_freq > thermal.target_freq ? thermal.target_freq : thermal.inline_freq;
+            Lockvalue(entry.path().string() + "/scaling_max_freq", freq);
+        }
+        
         temp_fd.close();
     }
 }
 
-void Cputhermal::thermal_freqwriter(const unsigned long& freq)
+void Cputhermal::set_target_freq(const unsigned long& freq)
 {
-    if (this->temp >= this->target_temp && kpi < SuperFreqTable.size())
-        kpi++;
-    else if (this->temp < this->target_temp)
-        kpi = 0;
-            
-    inline_freq = SuperFreqTable[kpi];
-    
-    const auto& w_freq = inline_freq > freq ? freq : inline_freq;
-    
+    Cputhermal& thermal = Cputhermal::getCputhermal();
+    thermal.target_freq = freq;
+}
+
+void Cputhermal::set_target_temp(const int& temp)
+{
+    Cputhermal& thermal = Cputhermal::getCputhermal();
+    thermal.target_temp = temp;
 }

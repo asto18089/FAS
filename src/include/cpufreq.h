@@ -10,9 +10,12 @@ class Cpufreq
     int scaling = 2;
     void makeFreqTable(const unsigned long);
     void writeFreq();
-    
-public:
     Cpufreq();
+public:
+    static Cpufreq& getCpufreq() {
+        static Cpufreq instance;
+        return instance;
+    }
     Cpufreq(const Cpufreq &) = delete; // dont copy this
     vector<unsigned long> get_super_table();
     void limit(const int);

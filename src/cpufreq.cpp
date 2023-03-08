@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include "include/cpufreq.h"
-#include "include/lockvalue.h"
+#include "include/cputhermal.h"
 
 using std::string;
 using std::vector;
