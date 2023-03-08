@@ -96,7 +96,7 @@ void Cpufreq::writeFreq()
 
 void Cpufreq::limit(const int change_in)
 {
-    const int &change = -change_in;
+    const int change = -change_in;
     if (change < 0)
     {
         if (kpi + change >= 0)

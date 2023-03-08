@@ -77,7 +77,7 @@ Cputhermal::Cputhermal()
     }
 
     // 创建超级频率表(用于控制所有集群)
-    auto makeSuperFreqTable = [&](const unsigned long &freqdiff)
+    auto makeSuperFreqTable = [&](const unsigned long freqdiff)
     {
         vector<unsigned long> freqtable;
 
@@ -128,13 +128,13 @@ void Cputhermal::temp_policy()
     }
 }
 
-void Cputhermal::TLockvalue(const string &location, const unsigned long &freq)
+void Cputhermal::TLockvalue(const string &location, const unsigned long freq)
 {
     Cputhermal &thermal = Cputhermal::getCputhermal();
     thermal.policy_freq[location] = freq;
 }
 
-void Cputhermal::set_target_temp(const int &temp)
+void Cputhermal::set_target_temp(const int temp)
 {
     Cputhermal &thermal = Cputhermal::getCputhermal();
     thermal.target_temp = temp;
