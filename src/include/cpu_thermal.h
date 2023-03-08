@@ -1,8 +1,7 @@
 #pragma once
 
-#include <fstream>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 class Cputhermal
@@ -12,7 +11,7 @@ class Cputhermal
     int target_temp = 75;
     int kpi = 0;
     unsigned long inline_freq = 0;
-    std::map<std::string, unsigned long> policy_freq;
+    std::unordered_map<std::string, unsigned long> policy_freq;
     std::string temp_node;
     Cputhermal();
 

@@ -125,14 +125,12 @@ void Cpufreq::limit_clear()
 
         fd.open("/sys/devices/system/cpu/cpufreq/" + policyname + "/cpuinfo_max_freq");
         fd >> max;
-
-        fd.close();
         return max;
     };
 
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
-        const string &policyname = entry.path().filename();
+        const string policyname = entry.path().filename();
         Cputhermal::TLockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
     }
 }

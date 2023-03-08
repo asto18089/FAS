@@ -18,8 +18,8 @@ using namespace std::chrono;
 
 Cputhermal::Cputhermal()
 {
-    const array<const string, 5> TYPENAMES = {"soc_max", "soc_top", "cpu_big", "soc", "cpu"};
-    auto node_finder = [&](const string &type)
+    constexpr array<string_view, 5> TYPENAMES = {"soc_max", "soc_top", "cpu_big", "soc", "cpu"};
+    auto node_finder = [&](const string_view &type)
     {
         for (const auto &entry : directory_iterator("/sys/devices/virtual/thermal"))
         {
@@ -42,7 +42,7 @@ Cputhermal::Cputhermal()
         return false;
     };
 
-    for (const string &i : TYPENAMES)
+    for (const string_view &i : TYPENAMES)
     {
         if (node_finder(i))
             break;
@@ -51,7 +51,7 @@ Cputhermal::Cputhermal()
     // 读取该集群的最大和最小频率
     auto readMAM = [](const string &policyname)
     {
-        unsigned long max(0), min(0);
+        unsigned long max = 0, min = 0;
         std::ifstream fd;
 
         fd.open("/sys/devices/system/cpu/cpufreq/" + policyname + "/cpuinfo_max_freq");
@@ -62,7 +62,7 @@ Cputhermal::Cputhermal()
         fd >> min;
         fd.close();
 
-        return std::pair{max, min};
+        return std::make_pair(max, min);
     };
 
     unsigned long maxfreq(0), minfreq(std::numeric_limits<unsigned long>::max());
@@ -84,7 +84,7 @@ Cputhermal::Cputhermal()
         for (unsigned long freq = maxfreq; freq >= minfreq; freq -= freqdiff)
             freqtable.push_back(freq);
 
-        return freqtable; // 返回向量作为结果
+        return freqtable; // 返回数组作为结果
     };
 
     this->SuperFreqTable = makeSuperFreqTable(50000);
@@ -118,7 +118,7 @@ void Cputhermal::temp_policy()
 
         for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
         {
-            const string &location = entry.path().string() + "/scaling_max_freq";
+            const string location = entry.path().string() + "/scaling_max_freq";
 
             if (thermal.policy_freq.contains(location))
                 Lockvalue(location, std::min(thermal.policy_freq[location], thermal.inline_freq));
