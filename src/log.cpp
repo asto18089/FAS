@@ -20,8 +20,9 @@ void Log::write(LogLevel level, const char* message) {
 
        file << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
        std::cout << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
+       
+       file.flush();
    }
-   file.flush();
 }
 
 const char* Log::levelToString(LogLevel level) {

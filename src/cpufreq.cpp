@@ -6,7 +6,6 @@
 
 #include "include/cpufreq.h"
 #include "include/cpu_thermal.h"
-#include "include/lockvalue.h"
 
 using std::string;
 using std::vector;
@@ -62,6 +61,7 @@ void Cpufreq::makeFreqTable(const unsigned long freqdiff) // 建议freqdiff为50
     };
 
     SuperFreqTable = makeSuperFreqTable(freqdiff);
+    writeFreq(); // 让温控启动
 }
 
 vector<unsigned long> Cpufreq::get_super_table()
@@ -133,7 +133,7 @@ void Cpufreq::limit_clear()
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
         const string &policyname = entry.path().filename();
-        Lockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
+        Cputhermal::TLockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
     }
 }
 
