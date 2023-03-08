@@ -38,26 +38,27 @@ static void bound2little()
 
 static string getTopapp()
 {
-    auto Testfile = [](const char* location){return (access(location, F_OK) == 0);};
+    auto Testfile = [](const char *location)
+    { return (access(location, F_OK) == 0); };
     string result;
-    
+
     if (Testfile("/sys/kernel/gbe/gbe2_fg_pid"))
     {
         string pid;
         std::ifstream Pid("/sys/kernel/gbe/gbe2_fg_pid"), app;
         Pid >> pid;
         Pid.close();
-        
+
         app.open(string("/proc/" + pid + "/cmdline").c_str());
         app >> result;
         app.close();
-        
+
         while (result[result.length() - 1] == '\0') // trim
             result.pop_back();
         return result;
     }
-    
-    FILE *app = popen("dumpsys activity activities|grep topResumedActivity=|tail -n 1|cut -d \"{\" -f2|cut -d \"/\" -f1|cut -d \" \" -f3", "r");
+
+    FILE *app = popen(R"(dumpsys activity activities|grep topResumedActivity=|tail -n 1|cut -d "{" -f2|cut -d "/" -f1|cut -d " " -f3)", "r");
 
     char buffer[1024] = {0};
 
@@ -72,7 +73,7 @@ static string getTopapp()
     fgets(buffer, sizeof(buffer), app);
     result = buffer;
     result.pop_back();
-        
+
     pclose(app);
     return result;
 }
@@ -83,12 +84,12 @@ int main()
     cout.sync_with_stdio(false);
     std::cout << std::unitbuf;
 
-    Log& log = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
+    Log &log = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
     log.setLevel(LogLevel::Info);
     // log.setLevel(LogLevel::Debug);
     log.write(LogLevel::Info, "Log started");
 
-    Cpufreq& cpu_controller = Cpufreq::getCpufreq();
+    Cpufreq &cpu_controller = Cpufreq::getCpufreq();
     log.write(LogLevel::Info, "Creating virtual frequency:");
 
     for (const auto &i : cpu_controller.get_super_table())
@@ -112,12 +113,12 @@ int main()
         }
 
         constexpr milliseconds ms(100);
-        milliseconds cost_time = duration_cast<milliseconds>(steady_clock::now() - cost);
-        milliseconds realtime = (cost_time < ms) ? (ms - cost_time) : ms;
+        const milliseconds cost_time = duration_cast<milliseconds>(steady_clock::now() - cost);
+        const milliseconds realtime = (cost_time < ms) ? (ms - cost_time) : ms;
         sleep_for(realtime);
-  
+
         const jank_data jdata = analyzeFrameData(getOriginalData());
-        
+
         if (jdata.empty())
         {
             log.write(LogLevel::Debug, "Empty jank data !");
@@ -126,7 +127,7 @@ int main()
 
         /* nice是超时帧占所有帧的百分率 */
         log.write(LogLevel::Debug, std::to_string(jdata.nice()).c_str());
-        
+
         const double nice = jdata.nice();
         constexpr double left = 0.008;
         constexpr double right = 0.016;

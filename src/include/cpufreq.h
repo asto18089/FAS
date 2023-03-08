@@ -11,8 +11,10 @@ class Cpufreq
     void makeFreqTable(const unsigned long);
     void writeFreq();
     Cpufreq();
+
 public:
-    static Cpufreq& getCpufreq() {
+    static Cpufreq &getCpufreq()
+    {
         static Cpufreq instance;
         return instance;
     }
