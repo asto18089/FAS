@@ -15,12 +15,14 @@ class Cputhermal
     std::map<std::string, unsigned long> policy_freq;
     std::string temp_node;
     Cputhermal();
+
 public:
-    static Cputhermal& getCputhermal() {
+    static Cputhermal &getCputhermal()
+    {
         static Cputhermal instance = Cputhermal();
         return instance;
     }
     static void temp_policy();
-    static void TLockvalue(const std::string&, const unsigned long&);
-    static void set_target_temp(const int&);
+    static void TLockvalue(const std::string &, const unsigned long &);
+    static void set_target_temp(const int &);
 };

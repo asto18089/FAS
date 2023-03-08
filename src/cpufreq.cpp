@@ -96,7 +96,7 @@ void Cpufreq::writeFreq()
 
 void Cpufreq::limit(const int change_in)
 {
-    const int& change = -change_in;  
+    const int &change = -change_in;
     if (change < 0)
     {
         if (kpi + change >= 0)
@@ -125,7 +125,7 @@ void Cpufreq::limit_clear()
 
         fd.open("/sys/devices/system/cpu/cpufreq/" + policyname + "/cpuinfo_max_freq");
         fd >> max;
-        
+
         fd.close();
         return max;
     };

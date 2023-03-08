@@ -23,7 +23,7 @@ string getSurfaceview()
     {
         string result = buffer;
         if ((result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos) || // 安卓11以及以上用的方法
-             result.find("SurfaceView -") != string::npos) // 安卓11以下的方法
+             result.find("SurfaceView -") != string::npos)                                           // 安卓11以下的方法
         {
             result.pop_back();
             pclose(game);
@@ -52,7 +52,7 @@ FtimeStamps getOriginalData()
 
     char buffer[1024] = {0};
     static string analyze, analyze_last;
-    
+
     while (std::fgets(buffer, sizeof(buffer), dumpsys))
     {
         static std::array<unsigned long, 3> timestamps = {0};
