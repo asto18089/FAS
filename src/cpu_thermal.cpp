@@ -103,7 +103,7 @@ void Cputhermal::temp_policy()
     int temp;
     while (true)
     {
-        sleep_for(5ms);
+        sleep_for(10ms);
         
         temp_fd.open(thermal.temp_node);
         temp_fd >> temp;
