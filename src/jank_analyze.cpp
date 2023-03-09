@@ -143,7 +143,6 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
                 const size_t start = analyze.find(':') + 2;
                 const size_t end = analyze.find('.', start + 1);
                 std::from_chars(analyze.data() + start, analyze.data() + end, result);
-                std::cout << analyze.substr(start, end - start) << '\n';
                 break;
             }
         }
