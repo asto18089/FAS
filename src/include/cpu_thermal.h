@@ -23,5 +23,5 @@ public:
     }
     static void temp_policy();
     static void TLockvalue(const std::string &, const unsigned long);
-    static void set_target_temp(const int);
+    static void node_target_temp();
 };

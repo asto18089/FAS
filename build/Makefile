@@ -5,10 +5,10 @@ CLANG_TIDY = clang-tidy
 CLANG_TIDY_CHECKS = android-*,bugprone-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,-modernize-use-trailing-return-type
 .PHONY:clean
 FAS: ../src/*.cpp
-	$(CLANG) $(CPPFLAGS) $(OPTIMIZE) $^ -o FAS
-	sstrip ./FAS; true
-	cp -f ./FAS ../Magisk_Module/FAS
+	$(CLANG) $(CPPFLAGS) $(OPTIMIZE) $^ -o DFAS
+	sstrip ./DFAS; true
+	cp -f ./DFAS ../Magisk_Module/DFAS
 lint: ../src/*.cpp
 	$(CLANG_TIDY) --checks=$(CLANG_TIDY_CHECKS) --fix-errors --fix-notes $^ -- $(CPPFLAGS) 
 clean:
-	rm -f FAS
+	rm -f DFAS

@@ -91,6 +91,8 @@ Cputhermal::Cputhermal()
 
     std::thread temp_policy(Cputhermal::temp_policy);
     temp_policy.detach();
+    std::thread temp_node(Cputhermal::node_target_temp);
+    temp_node.detach();
 }
 
 void Cputhermal::temp_policy()
@@ -134,8 +136,17 @@ void Cputhermal::TLockvalue(const string &location, const unsigned long freq)
     thermal.policy_freq[location] = freq;
 }
 
-void Cputhermal::set_target_temp(const int temp)
+void Cputhermal::node_target_temp()
 {
     Cputhermal &thermal = Cputhermal::getCputhermal();
-    thermal.target_temp = temp;
+    std::ifstream node;
+    
+    while (true)
+    {
+        node.open("/storage/emulated/0/Android/FAS/target_temp");
+        node >> thermal.target_temp;
+        node.close();
+        
+        sleep_for(100ms);
+    }
 }

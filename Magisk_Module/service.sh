@@ -17,6 +17,8 @@ wait_until_login() {
 }
 wait_until_login
 
-chmod a+x $MODDIR/FAS
+chmod a+x $MODDIR/DFAS
 
-nohup $MODDIR/FAS >/dev/null 2>&1 &
+nohup $MODDIR/DFAS >/dev/null 2>&1 &
+[[ ! -f "/data/powercfg.sh" ]] && cp -f "$MODDIR/powercfg.sh" "/data/powercfg.sh"
+[ ! -f "/data/powercfg.json" ]] && cp -f "$MODDIR/powercfg.json" "/data/powercfg.json"

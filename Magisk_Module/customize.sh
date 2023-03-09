@@ -12,12 +12,17 @@ if [ $(pidof uperf) != "" ]; then
     echo "检测到uperf, 请移除"abort
 fi
 
-# permission
-chmod a+x $MODPATH/FAS
+mkdir -p /storage/emulated/0/Android/FAS
 
+# permission
+chmod a+x $MODPATH/DFAS
 # start on install
-killall FAS > /dev/null 2>&1
+killall DFAS > /dev/null 2>&1
+killall FAS
+[[ -d /data/adb/modules/FAS || -d /data/adb/modules_update/FAS ]] && rm -rf /data/adb/modules/FAS && rm -rf /data/adb/modules_update/FAS
 
 echo "----------------------------------------------------"
-
-$MODPATH/FAS &
+nohup $MODPATH/DFAS >/dev/null 2>&1 &
+# scene
+cp -f "$MODPATH/powercfg.sh" "/data/powercfg.sh"
+cp -f "$MODPATH/powercfg.json" "/data/powercfg.json"

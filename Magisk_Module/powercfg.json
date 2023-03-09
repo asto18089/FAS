@@ -1,0 +1,12 @@
+{ 
+    "name": "DFAS",
+    "author": "shadow3",
+    "version": "v0.3",
+    "versionCode": 20230309, 
+    "features": {
+        "strict": true,
+        "pedestal": true
+    },
+    "module": "DFAS",
+    "entry": "/data/powercfg.sh"
+}
