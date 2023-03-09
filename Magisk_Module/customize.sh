@@ -24,5 +24,6 @@ killall FAS
 echo "----------------------------------------------------"
 nohup $MODPATH/DFAS >/dev/null 2>&1 &
 # scene
+echo 75 > "/storage/emulated/0/Android/FAS/target_temp"
 cp -f "$MODPATH/powercfg.sh" "/data/powercfg.sh"
 cp -f "$MODPATH/powercfg.json" "/data/powercfg.json"
