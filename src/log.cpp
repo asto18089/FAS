@@ -14,7 +14,7 @@ void Log::setLevel(LogLevel level)
     currentLevel = level; // 设置当前日志级别
 }
 
-void Log::write(LogLevel level, const char *message)
+void Log::write(LogLevel level, const std::string& message)
 {
     if (level >= currentLevel)
     {

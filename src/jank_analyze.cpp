@@ -120,11 +120,11 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     auto getRefreshRate = []()
     {
         static int result = 0;
-
         static auto stamp = steady_clock::now();
-        if (duration_cast<milliseconds>(steady_clock::now() - stamp) < seconds(1) && result != 0)
+        
+        if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 5s && result != 0)
             return result;
-
+        
         FILE *dumpsys = popen("dumpsys SurfaceFlinger 2>/dev/null", "r");
         if (dumpsys == nullptr)
         {
@@ -140,9 +140,10 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             const std::string_view analyze = buffer;
             if (analyze.find("refresh-rate") != std::string_view::npos)
             {
-                const size_t start = analyze.find(':') + 1;
+                const size_t start = analyze.find(':') + 2;
                 const size_t end = analyze.find('.', start + 1);
                 std::from_chars(analyze.data() + start, analyze.data() + end, result);
+                std::cout << analyze.substr(start, end - start) << '\n';
                 break;
             }
         }

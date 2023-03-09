@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <string>
 
 enum class LogLevel
 {
@@ -19,7 +20,7 @@ public:
         return instance;
     }
     void setLevel(LogLevel level);
-    void write(LogLevel level, const char *message);
+    void write(LogLevel level, const std::string& message);
 private:
     Log(const std::string &filename);
     std::ofstream file;

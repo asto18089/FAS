@@ -52,6 +52,7 @@ FtimeStamps getOriginalData()
 
     char buffer[1024] = {0};
     static string analyze, analyze_last;
+    string analyze_last_t;
 
     while (std::fgets(buffer, sizeof(buffer), dumpsys))
     {
@@ -100,8 +101,9 @@ FtimeStamps getOriginalData()
             Fdata.end_timestamps.push_back(timestamps[2]);
         }
 
-        analyze_last = analyze;
+        analyze_last_t = analyze;
     }
+    analyze_last = std::move(analyze_last_t);
     pclose(dumpsys);
     return Fdata;
 }
