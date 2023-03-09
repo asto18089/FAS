@@ -4,7 +4,7 @@ CLANG = $(NDK)/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33
 CLANG_TIDY = clang-tidy
 CLANG_TIDY_CHECKS = android-*,bugprone-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,-modernize-use-trailing-return-type
 .PHONY:clean
-FAS: ../src/*.cpp
+DFAS: ../src/*.cpp
 	$(CLANG) $(CPPFLAGS) $(OPTIMIZE) $^ -o DFAS
 	sstrip ./DFAS; true
 	cp -f ./DFAS ../Magisk_Module/DFAS

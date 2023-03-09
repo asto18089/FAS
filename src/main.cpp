@@ -114,7 +114,7 @@ int main()
 
         constexpr milliseconds ms(100);
         const milliseconds cost_time = duration_cast<milliseconds>(steady_clock::now() - cost);
-        const milliseconds realtime = (cost_time < ms) ? (ms - cost_time) : ms;
+        const milliseconds realtime = (cost_time < ms) ? (ms - cost_time) : milliseconds(0s);
         sleep_for(realtime);
 
         const jank_data jdata = analyzeFrameData(getOriginalData());
