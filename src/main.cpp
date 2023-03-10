@@ -38,8 +38,7 @@ static void bound2little()
 
 static string getTopapp()
 {
-    auto Testfile = [](const char *location)
-    { return (access(location, F_OK) == 0); };
+    auto Testfile = [](const char *location) { return (access(location, F_OK) == 0); };
     string result;
 
     if (Testfile("/sys/kernel/gbe/gbe2_fg_pid"))
@@ -47,14 +46,9 @@ static string getTopapp()
         string pid;
         std::ifstream Pid("/sys/kernel/gbe/gbe2_fg_pid"), app;
         Pid >> pid;
-        Pid.close();
 
-        app.open(string("/proc/" + pid + "/cmdline").c_str());
-        app >> result;
-        app.close();
-
-        while (result[result.length() - 1] == '\0') // trim
-            result.pop_back();
+        app.open(("/proc/" + pid + "/cmdline").c_str());
+        std::getline(app, result, '\0');
         return result;
     }
 
@@ -110,14 +104,12 @@ int main()
             cpu_controller.limit_clear();
         }
 
-        constexpr milliseconds ms(100);
-        sleep_for(ms);
+        sleep_for(100ms);
 
         const jank_data jdata = analyzeFrameData(getOriginalData());
-
         if (jdata.empty())
         {
-            log.write(LogLevel::Debug, "Empty jank data !");
+            log.write(LogLevel::Debug, "Empty jank data!");
             continue;
         }
 
