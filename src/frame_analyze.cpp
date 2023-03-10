@@ -2,6 +2,7 @@
 #include <charconv>
 #include <array>
 #include <algorithm>
+#include <chrono>
 
 #include "include/frame_analyze.h"
 
@@ -11,7 +12,7 @@ string getSurfaceview()
 {
     static string result;
     static auto stamp = steady_clock::now();
-    if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 1s && ! result.empty())
+    if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 1s && !result.empty())
         return result;
     FILE *game = popen("dumpsys SurfaceFlinger --list 2>/dev/null", "r");
 

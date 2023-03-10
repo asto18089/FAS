@@ -67,7 +67,7 @@ Cputhermal::Cputhermal()
         return std::make_pair(max, min);
     };
 
-    unsigned long maxfreq(0), minfreq(std::numeric_limits<unsigned long>::max());
+    unsigned long maxfreq = 0, minfreq = std::numeric_limits<unsigned long>::max();
 
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
     {
