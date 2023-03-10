@@ -149,11 +149,11 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
         pclose(dumpsys);
         stamp = steady_clock::now();
-
+        
         return result;
     };
-
-    const unsigned long flashtime = 1000 * 1000 * 1000 / getRefreshRate();
+    
+    const unsigned long flashtime = getRefreshRate() != 0 ? 1000 * 1000 * 1000 / getRefreshRate() : 0;
     for (auto &i : vsync_frametime)
     {
         if (standard_frametime > flashtime)
