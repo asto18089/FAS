@@ -5,8 +5,14 @@
 
 #include "include/frame_analyze.h"
 
+using namespace std::chrono;
+
 string getSurfaceview()
 {
+    static string result;
+    static auto stamp = steady_clock::now();
+    if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 1s && ! result.empty())
+        return result;
     FILE *game = popen("dumpsys SurfaceFlinger --list 2>/dev/null", "r");
 
     char buffer[1024] = {0};
@@ -21,19 +27,19 @@ string getSurfaceview()
 
     while (fgets(buffer, sizeof(buffer), game))
     {
-        string result = buffer;
+        result = buffer;
         if ((result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos) || // 安卓11以及以上用的方法
              result.find("SurfaceView -") != string::npos)                                           // 安卓11以下的方法
         {
             result.pop_back();
-            pclose(game);
-            return result;
+            break;
         }
         /*安卓9以下的方法还不一样，不过没有必要适配*/
     }
 
     pclose(game);
-    return {};
+    stamp = steady_clock::now();
+    return result;
 }
 
 FtimeStamps getOriginalData()

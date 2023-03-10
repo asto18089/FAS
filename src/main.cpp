@@ -101,8 +101,6 @@ int main()
     start_close_others();
     log.write(LogLevel::Info, "The cleanup process starts");
 
-    auto cost = steady_clock::now();
-
     while (true)
     {
         while (getSurfaceview().find(getTopapp()) == string::npos)
@@ -113,9 +111,7 @@ int main()
         }
 
         constexpr milliseconds ms(100);
-        const milliseconds cost_time = duration_cast<milliseconds>(steady_clock::now() - cost);
-        const milliseconds realtime = (cost_time < ms) ? (ms - cost_time) : milliseconds(0s);
-        sleep_for(realtime);
+        sleep_for(ms);
 
         const jank_data jdata = analyzeFrameData(getOriginalData());
 
@@ -129,8 +125,8 @@ int main()
         log.write(LogLevel::Debug, std::to_string(jdata.nice()).c_str());
 
         const double nice = jdata.nice();
-        constexpr double left = 0.008;
-        constexpr double right = 0.016;
+        constexpr double left = 0.01;
+        constexpr double right = 0.02;
         if (nice >= left && nice <= right)
             log.write(LogLevel::Debug, "The proportion of frame delay is in line with expectations");
         else if (nice < left) // 掉帧少了，有余量
@@ -144,19 +140,18 @@ int main()
             if (nice <= right * 11 / 10) // 掉帧多了，卡顿
             {
                 log.write(LogLevel::Debug, "Exceeded Expectation Rating : 1");
-                cpu_controller.limit(2);
+                cpu_controller.limit(1);
             }
             else if (nice <= right * 12 / 10)
             {
                 log.write(LogLevel::Debug, "Exceeded Expectation Rating : 2");
-                cpu_controller.limit(3);
+                cpu_controller.limit(2);
             }
             else
             {
                 log.write(LogLevel::Debug, "Exceeded Expectation Rating : 3");
-                cpu_controller.limit(5);
+                cpu_controller.limit(3);
             }
         }
-        cost = steady_clock::now();
     }
 }
