@@ -53,34 +53,6 @@ static unsigned long find_nearest_standard_frametime(unsigned long current_frame
     return (current_frametime - left_value < right_value - current_frametime) ? left_value : right_value;
 }
 
-template <typename T>
-static T mode(const vector<T> &v)
-{
-    // 创建一个unordered_map，键为元素值，值为出现次数
-    std::unordered_map<T, int> m;
-
-    // 遍历vector，更新unordered_map中的计数
-    for (const auto &x : v)
-        m[x / (1000 * 1000)]++;
-
-    // 初始化众数和最大次数
-    T mode = v[0];
-    int max_count = m[v[0]];
-
-    // 遍历unordered_map，找到最大次数对应的元素
-    for (const auto &p : m)
-    {
-        if (p.second > max_count)
-        {
-            mode = p.first;
-            max_count = p.second;
-        }
-    }
-
-    // 返回众数
-    return mode;
-}
-
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
    需要让始终保持发生一定数量轻微的超时
    如果frametime小于该(需要)超时后的frametime
@@ -189,10 +161,10 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
 double jank_data::nice() const
 {
-    return (double)(this->OOT) / (double)(this->OOT + this->LOT);
+    return (double)OOT / (double)(OOT + LOT);
 }
 
 bool jank_data::empty() const
 {
-    return this->empty_private;
+    return empty_private;
 }

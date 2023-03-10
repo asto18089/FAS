@@ -27,7 +27,7 @@ Cputhermal::Cputhermal()
             if (!entry.is_directory())
                 continue;
 
-            const path &type_file = entry.path() / "type";
+            const path type_file = entry.path() / "type";
             if (exists(type_file) && is_regular_file(type_file))
             {
                 ifs.open(type_file);
@@ -89,7 +89,7 @@ Cputhermal::Cputhermal()
         return freqtable; // 返回数组作为结果
     };
 
-    this->SuperFreqTable = makeSuperFreqTable(50000);
+    SuperFreqTable = makeSuperFreqTable(50000);
 
     std::thread temp_policy(Cputhermal::temp_policy);
     temp_policy.detach();

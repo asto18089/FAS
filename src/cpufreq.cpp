@@ -76,7 +76,7 @@ vector<unsigned long> Cpufreq::get_super_table()
 
 void Cpufreq::writeFreq()
 {
-    log_cpufreq.write(LogLevel::Debug, "Starting writing frequency");
+    log_cpufreq.write(LogLevel::Debug, "Start writing frequency");
     directory_entry end_entry;
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq")) // 保存最后一个entry
         end_entry = entry;
@@ -96,27 +96,26 @@ void Cpufreq::writeFreq()
         else
             Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
     }
-    log_cpufreq.write(LogLevel::Debug, "Write Frequency Complete");
+    log_cpufreq.write(LogLevel::Debug, "Write frequency complete");
 }
 
 void Cpufreq::limit(const int change_in)
 {
     int change = 0;
-    
+
     if (change_in > 0 && kpi <= SuperFreqTable.size() * 6 / 10)
         change = -change_in * 2 / 3;
     else if (change_in > 0 && kpi <= SuperFreqTable.size() * 8 / 10)
         change = -change_in / 2;
-        
+
     if (change_in < 0 && kpi <= SuperFreqTable.size() * 6 / 10)
         change = -change_in * 3 / 2;
     else if (change_in < 0 && kpi <= SuperFreqTable.size() * 8 / 10)
         change = -change_in * 2;
- 
+
     if (change < 0)
     {
-        log_cpufreq.write(LogLevel::Debug, "Boost Frequency Level : " + std::to_string(-change));
-        
+        log_cpufreq.write(LogLevel::Debug, "Boost frequency level: " + std::to_string(-change));
         if (kpi + change >= 0)
             kpi += change;
         else
@@ -124,7 +123,7 @@ void Cpufreq::limit(const int change_in)
     }
     else
     {
-        log_cpufreq.write(LogLevel::Debug, "Reduce frequency level : " + std::to_string(change));
+        log_cpufreq.write(LogLevel::Debug, "Reduce frequency level: " + std::to_string(change));
         if (kpi + change <= SuperFreqTable.size() - 1)
             kpi += change;
         else
@@ -158,9 +157,9 @@ void Cpufreq::limit_clear()
 
 void Cpufreq::set_scaling(const int new_scaling)
 {
-    log_cpufreq.write(LogLevel::Debug, "Seting frequency offset : " + std::to_string(new_scaling));
-    
+    log_cpufreq.write(LogLevel::Debug, "Setting frequency offset: " + std::to_string(new_scaling));
+
     scaling = new_scaling;
-    
-    log_cpufreq.write(LogLevel::Debug, "Seting completed");
+
+    log_cpufreq.write(LogLevel::Debug, "Setting frequency offset completed");
 }
