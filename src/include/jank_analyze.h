@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 template <typename T>
 constexpr static T mode(const vector<T> &v)
 {
