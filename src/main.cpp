@@ -29,11 +29,11 @@ static void bound2little()
     std::getline(fd, related_cpus);
     std::istringstream cut(related_cpus);
 
-    uint8_t cpu = 0;
+    int cpu = 0;
     while (cut >> cpu)
         CPU_SET(cpu, &mask);
 
-    sched_setaffinity(0, sizeof(cpu_set_t), &mask);
+    sched_setaffinity(0, sizeof(mask), &mask);
 }
 
 static string getTopapp()
@@ -86,7 +86,7 @@ int main()
 
     Log &log = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
     log.setLevel(LogLevel::Info);
-    // log.setLevel(LogLevel::Debug);
+    log.setLevel(LogLevel::Debug);
     log.write(LogLevel::Info, "Log started");
 
     Cpufreq &cpu_controller = Cpufreq::getCpufreq();

@@ -140,7 +140,7 @@ void Cputhermal::node_target_temp()
 {
     Cputhermal &thermal = Cputhermal::getCputhermal();
     std::ifstream node;
-    
+    prctl(PR_SET_NAME, "NodeReader");
     while (true)
     {
         node.open("/storage/emulated/0/Android/FAS/target_temp");
