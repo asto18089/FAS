@@ -23,15 +23,17 @@ Cputhermal::Cputhermal()
     {
         for (const auto &entry : directory_iterator("/sys/devices/virtual/thermal"))
         {
+            static std::ifstream ifs;
             if (!entry.is_directory())
                 continue;
 
             const path &type_file = entry.path() / "type";
             if (exists(type_file) && is_regular_file(type_file))
             {
-                std::ifstream ifs(type_file);
+                ifs.open(type_file);
                 string content;
                 ifs >> content;
+                ifs.close();
                 if (content.find(type) != string::npos)
                 {
                     temp_node = entry.path() / "temp";
