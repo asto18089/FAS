@@ -24,6 +24,7 @@ void Log::write(LogLevel level, const std::string &message)
 
         file << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
         std::cout << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
+        file.flush();
     }
 }
 
