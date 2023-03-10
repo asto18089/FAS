@@ -36,6 +36,7 @@ string getSurfaceview()
             break;
         }
         /*安卓9以下的方法还不一样，不过没有必要适配*/
+        result.clear();
     }
 
     pclose(game);

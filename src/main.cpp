@@ -39,16 +39,27 @@ static void bound2little()
 static string getTopapp()
 {
     auto Testfile = [](const char *location) { return (access(location, F_OK) == 0); };
+    
     string result;
 
     if (Testfile("/sys/kernel/gbe/gbe2_fg_pid"))
     {
         string pid;
-        std::ifstream Pid("/sys/kernel/gbe/gbe2_fg_pid"), app;
-        Pid >> pid;
+        static std::ifstream f_pid, app;
+        f_pid.open("/sys/kernel/gbe/gbe2_fg_pid");
+        if (! f_pid)
+            return {};
+        f_pid >> pid;
+        f_pid.close();
 
-        app.open(("/proc/" + pid + "/cmdline").c_str());
-        std::getline(app, result, '\0');
+        app.open("/proc/" + pid + "/cmdline");
+        if (! app)
+            return {};
+        app >> result;
+        app.close();
+
+        while (*(result.cend() - 1) == '\0')
+            result.pop_back();
         return result;
     }
 
@@ -97,7 +108,7 @@ int main()
 
     while (true)
     {
-        while (getSurfaceview().find(getTopapp()) == string::npos)
+        while (getSurfaceview().find(getTopapp()) == string::npos && ! getTopapp().empty())
         {
             sleep_for(1s);
             log.write(LogLevel::Debug, "Not game");
@@ -109,7 +120,7 @@ int main()
         const jank_data jdata = analyzeFrameData(getOriginalData());
         if (jdata.empty())
         {
-            log.write(LogLevel::Debug, "Empty jank data!");
+            log.write(LogLevel::Debug, "Empty jank data !");
             continue;
         }
 
