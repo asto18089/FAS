@@ -25,7 +25,7 @@ string getSurfaceview()
         auto clear = [&]()
         {
             if (!last.empty() && last != buf)
-                execCmdSync("/system/bin/dumpsys", {"--latency-clear"});
+                execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger", "--latency-clear"});
             last = buf;
         };
         if (buf.find("SurfaceView[") != string::npos && buf.find("BLAST") != string::npos)
@@ -47,19 +47,27 @@ FtimeStamps getOriginalData()
     log_frame.write(LogLevel::Debug, "Start dumping frame time data");
     FtimeStamps Fdata;
 
+    log_frame.write(LogLevel::Debug, "Dumpsys");
     string dumpsys = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger", "--latency", getSurfaceview()});
-
+    
+    log_frame.write(LogLevel::Debug, "if empty");
     if (dumpsys.empty())
         return Fdata;
 
+    log_frame.write(LogLevel::Debug, "creat iss");
+    
     std::istringstream iss(dumpsys);
     static string analyze, analyze_last;
     string analyze_last_t;
 
+    log_frame.write(LogLevel::Debug, "Start getline");
+    
     while (std::getline(iss, analyze))
     {
-        static std::array<unsigned long, 3> timestamps = {0};
-
+        log_frame.write(LogLevel::Debug, analyze);
+        std::array<unsigned long, 3> timestamps = {0};
+        
+        log_frame.write(LogLevel::Debug, "if analyze empty");
         if (analyze_last == analyze && !analyze_last.empty())
         {
             Fdata.start_timestamps.clear();
@@ -69,7 +77,8 @@ FtimeStamps getOriginalData()
             analyze_last.clear();
             continue;
         }
-
+        
+        log_frame.write(LogLevel::Debug, "get 3 stamps");
         for (size_t pos = 0, i = 0; pos < analyze.length();)
         {
             pos = std::find_if_not(analyze.cbegin() + pos, analyze.cend(), [](char c)
@@ -87,7 +96,8 @@ FtimeStamps getOriginalData()
             pos = end;
             i++;
         }
-
+        
+        log_frame.write(LogLevel::Debug, "reduce rubbish data");
         // 等于 0 或大于等于 10000000000000000
         auto pred = [](const auto &i) { return i == 0 || i >= 10000000000000000; };
         auto it = std::find_if(timestamps.cbegin(), timestamps.cend(), pred);
@@ -100,7 +110,8 @@ FtimeStamps getOriginalData()
             Fdata.vsync_timestamps.push_back(timestamps[1]);
             Fdata.end_timestamps.push_back(timestamps[2]);
         }
-
+        
+        log_frame.write(LogLevel::Debug, "Save analyze");
         analyze_last_t = analyze;
     }
     
