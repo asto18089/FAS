@@ -34,7 +34,7 @@ struct Jank_data
 {
 private:
     bool empty_private = false;
-
+    void analyzeFrameData(const FtimeStamps &Fdata);
 public:
     int OOT = 0;
     int LOT = 0;
@@ -42,8 +42,5 @@ public:
 
     double nice() const;
     bool empty() const;
-
-    friend Jank_data analyzeFrameData(const FtimeStamps &Fdata);
+    Jank_data(const FtimeStamps &Fdata);
 };
-
-Jank_data analyzeFrameData(const FtimeStamps &Fdata);

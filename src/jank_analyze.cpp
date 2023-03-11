@@ -48,6 +48,11 @@ static std::pair<int, int> find_nearest_standard(int current_fps) // 通过当�
     return {};
 }
 
+Jank_data::Jank_data(const FtimeStamps &Fdata)
+{
+    analyzeFrameData(Fdata);
+}
+
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
    需要让始终保持发生一定数量轻微的超时
    如果frametime小于该(需要)超时后的frametime
@@ -56,17 +61,15 @@ static std::pair<int, int> find_nearest_standard(int current_fps) // 通过当�
    则说明需要更多性能
    如此可得到游戏运行刚好需要的频率 */
 
-Jank_data analyzeFrameData(const FtimeStamps &Fdata)
+void Jank_data::analyzeFrameData(const FtimeStamps &Fdata)
 {
     DEBUG("Start dumping frametimedata");
-    Jank_data Jdata;
-
     if (Fdata.vsync_timestamps.size() < 4)
     {
-        Jdata.empty_private = true;
+        empty_private = true;
         DEBUG("Useless frametime data");
         sleep_for(300ms);
-        return Jdata;
+        return;
     }
 
     auto vsync_begin = Fdata.vsync_timestamps.cbegin();
@@ -84,7 +87,7 @@ Jank_data analyzeFrameData(const FtimeStamps &Fdata)
     // 获得标准frametime
     const auto &standard = find_nearest_standard(Fdata.getFps());
     standard_frametime = standard.second;
-    Jdata.missed_fps = standard.first - Fdata.getFps();
+    missed_fps = standard.first - Fdata.getFps();
     
     DEBUG("Standard frametime :" + std::to_string(standard_frametime));
     
@@ -145,16 +148,15 @@ Jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
         // std::cout << i << '\n';
         if (i > standard_frametime)
-            Jdata.OOT++;
+            OOT++;
         else
-            Jdata.LOT++;
+            LOT++;
     }
     if (standard_frametime > flashtime)
         sleep_for(milliseconds(standard_frametime / 1000 / 1000) * 2 * 10);
     else
         sleep_for(milliseconds(standard_frametime / 1000 / 1000) * 10);
     DEBUG("Dumped frametimedata");
-    return Jdata;
 }
 
 double Jank_data::nice() const
