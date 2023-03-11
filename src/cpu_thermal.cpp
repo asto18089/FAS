@@ -1,6 +1,11 @@
 #include <iostream>
 #include <thread>
 #include <sys/prctl.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <filesystem>
 #include <array>
 #include <chrono>
@@ -141,14 +146,21 @@ void Cputhermal::TLockvalue(const string &location, const unsigned long freq)
 void Cputhermal::node_target_temp()
 {
     Cputhermal &thermal = Cputhermal::getCputhermal();
-    std::ifstream node;
+    const char* node = "/storage/emulated/0/Android/FAS/target_temp";
+    int fd;
+    char buffer[1024];    
     prctl(PR_SET_NAME, "NodeReader");
     while (true)
     {
-        node.open("/storage/emulated/0/Android/FAS/target_temp");
-        node >> thermal.target_temp;
-        node.close();
-        
+        mkfifo(node, 0644);
+        fd = open(node, O_RDWR);
+        if (read(fd, buffer, sizeof(buffer)) == 0)
+        {
+            write(fd, "85", 3);
+            read(fd, buffer, sizeof(buffer));
+        }
+        thermal.target_temp = atoi(buffer);
+        close(fd);
         sleep_for(100ms);
     }
 }

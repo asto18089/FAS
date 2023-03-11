@@ -13,51 +13,45 @@
 #include "include/log.h"
 #include "include/misc.h"
 
-Log &log_jank = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
-#define DEBUG_LOG(x) log_jank.write(LogLevel::Debug, x)
-
 using namespace std::chrono;
 
-constexpr unsigned int FRAMETIME_30FPS = 1000 * 1000 * 1000 / 30;
-constexpr unsigned int FRAMETIME_45FPS = 1000 * 1000 * 1000 / 45;
-constexpr unsigned int FRAMETIME_60FPS = 1000 * 1000 * 1000 / 60;
-constexpr unsigned int FRAMETIME_90FPS = 1000 * 1000 * 1000 / 90;
-constexpr unsigned int FRAMETIME_120FPS = 1000 * 1000 * 1000 / 120;
-constexpr unsigned int FRAMETIME_144FPS = 1000 * 1000 * 1000 / 144;
+Log &log_jank = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
+
+#define DEBUG_LOG(x) log_jank.write(LogLevel::Debug, x)
+#define INLINE_FT(x) constexpr unsigned int FRAMETIME_##x##FPS = 1000 * 1000 * 1000 / (x)
+
+INLINE_FT(30);
+INLINE_FT(45);
+INLINE_FT(60);
+INLINE_FT(90);
+INLINE_FT(120);
+INLINE_FT(144);
 
 constexpr std::array<unsigned int, 6> STANDARD_FRAMETIMES{FRAMETIME_30FPS, FRAMETIME_45FPS, FRAMETIME_60FPS, FRAMETIME_90FPS, FRAMETIME_120FPS, FRAMETIME_144FPS};
 
-static unsigned long find_nearest_standard_frametime(unsigned long current_frametime)
+static unsigned int find_nearest_standard_frametime(unsigned int current_frametime)
 {
     DEBUG_LOG("Start finding standard frametime");
-    size_t left = 0, right = STANDARD_FRAMETIMES.size() - 1, mid = 0;
 
-    while (left <= right)
+    auto it = std::upper_bound(STANDARD_FRAMETIMES.rbegin(), STANDARD_FRAMETIMES.rend(), current_frametime);
+
+    if (it == STANDARD_FRAMETIMES.rend())
     {
-        mid = (left + right) >> 1;
-        if (left >= STANDARD_FRAMETIMES.size() - 1)
-        {
-            left = STANDARD_FRAMETIMES.size() - 1;
-            break;
-        }
-
-        if (right <= 0)
-        {
-            right = 0;
-            left = 0;
-            break;
-        }
-
-        if (current_frametime < STANDARD_FRAMETIMES[mid])
-            left = mid + 1;
-        else
-            right = mid - 1;
+        DEBUG_LOG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.front()));
+        return STANDARD_FRAMETIMES.front();
     }
 
-    auto left_value = STANDARD_FRAMETIMES[left];
-    auto right_value = STANDARD_FRAMETIMES[right];
-    DEBUG_LOG("Finded standard frametime :" + std::to_string(current_frametime - left_value < right_value - current_frametime ? left_value : right_value));
-    return (current_frametime - left_value < right_value - current_frametime) ? left_value : right_value;
+    if (it == STANDARD_FRAMETIMES.rbegin())
+    {
+        DEBUG_LOG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.back()));
+        return STANDARD_FRAMETIMES.back();
+    }
+ 
+    auto left_value = *it;
+    auto right_value = *(it - 1);
+    auto result = (std::abs(static_cast<int>(current_frametime) - static_cast<int>(left_value)) < std::abs(static_cast<int>(right_value) - static_cast<int>(current_frametime))) ? left_value : right_value;
+    DEBUG_LOG("Finded standard frametimes :" + std::to_string(left_value) + " and " + std::to_string(right_value));
+    return result;
 }
 
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
@@ -83,8 +77,8 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     auto vsync_begin = Fdata.vsync_timestamps.cbegin();
     auto vsync_end = Fdata.vsync_timestamps.cend();
 
-    vector<unsigned long> vsync_frametime;
-    static unsigned long standard_frametime;
+    vector<unsigned int> vsync_frametime;
+    static unsigned int standard_frametime;
 
     for (auto i = vsync_begin + 1; i < vsync_end - 1; i++)
     {
@@ -97,7 +91,6 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     // 获得标准frametime
     standard_frametime = find_nearest_standard_frametime(standard_frametime);
 
-    // std::cout << standard_frametime << '\n';
     auto getRefreshRate = []()
     {
         static int result = 0;
@@ -128,12 +121,12 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         return result;
     };
     
-    const unsigned long flashtime = getRefreshRate() != 0 ? 1000 * 1000 * 1000 / getRefreshRate() : 0;
+    const unsigned int flashtime = getRefreshRate() != 0 ? 1000 * 1000 * 1000 / getRefreshRate() : 0;
     for (auto &i : vsync_frametime)
     {
         if (standard_frametime > flashtime)
         {
-            const unsigned long high_ignore = standard_frametime * 2 - flashtime;
+            const unsigned int high_ignore = standard_frametime * 2 - flashtime;
 
             const std::string s_highignore = std::to_string(high_ignore);
             const std::string s_lowignore = std::to_string(flashtime);
@@ -153,7 +146,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             }
         }
 
-        // std::cout << i << '\n';
+        //std::cout << i << '\n';
         if (i > standard_frametime)
             Jdata.OOT++;
         else

@@ -16,15 +16,28 @@ using namespace std::chrono;
 
 string getSurfaceview()
 {
+    static string last;
     string game = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger", "--list"});
     std::istringstream ss_game(game);
     string buf;
     while (std::getline(ss_game, buf))
     {
+        auto clear = [&]()
+        {
+            if (!last.empty() && last != buf)
+                execCmdSync("/system/bin/dumpsys", {"--latency-clear"});
+            last = buf;
+        };
         if (buf.find("SurfaceView[") != string::npos && buf.find("BLAST") != string::npos)
+        {
+            clear();
             return buf;
+        }
         if (buf.find("SurfaceView -") != string::npos)
+        {
+            clear();
             return buf;
+        }
     }
     return {};
 }
