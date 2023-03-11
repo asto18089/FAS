@@ -115,19 +115,24 @@ void FtimeStamps::fpsWatcher(int &fps)
     string dump_A, dump_B;
     while (true)
     {
-        time_A = steady_clock::now();
-        string dump_A = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});        
+        auto parall_stamp_dump = [](steady_clock::time_point& time_T, string& dump_T)
+        {
+            std::thread stamp_and_dump[2] = {[&](){time_T = steady_clock::now}, [&](){dump_T = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});}};
+            stamp_and_dump[0].join;
+            stamp_and_dump[1].join;
+        };
+
+        parall_stamp_dump(time_A, dump_A);
         dump_A = dump_A.substr(15, 8);
         int frame_A = stoi(dump_A, nullptr, 16);
         
         sleep_for(1s);
 
-        time_B = steady_clock::now();
-        string dump_B = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});
+        parall_stamp_dump(time_B, dump_B);
         dump_B = dump_B.substr(15, 8);
         int frame_B = stoi(dump_B, nullptr, 16);
 
-        fps = frame_B - frame_A / (duration_cast<microseconds>(time_B - time_A).count() / 1000 / 1000);
+        fps = frame_B - frame_A / (duration_cast<microseconds>(time_B - time_A).count() / constexpr(1000 * 1000));
         DEBUG("Fps :" + std::to_string(fps));
     }
 }
