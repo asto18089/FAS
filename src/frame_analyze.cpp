@@ -5,11 +5,15 @@
 #include <chrono>
 
 #include "include/frame_analyze.h"
+#include "include/log.h"
+
+Log &log_frame = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
 
 using namespace std::chrono;
 
 string getSurfaceview()
 {
+    log_frame.write(LogLevel::Debug, "Start dumping Surfaceview");
     static string result;
     static auto stamp = steady_clock::now();
     if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 1s && !result.empty())
@@ -41,11 +45,13 @@ string getSurfaceview()
 
     pclose(game);
     stamp = steady_clock::now();
+    log_frame.write(LogLevel::Debug, "Dumped Surfaceview");
     return result;
 }
 
 FtimeStamps getOriginalData()
 {
+    log_frame.write(LogLevel::Debug, "Start dumping frame time data");
     FtimeStamps Fdata;
     const string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\' 2>/dev/null";
     FILE *dumpsys = popen(cmd.c_str(), "r");
@@ -113,5 +119,6 @@ FtimeStamps getOriginalData()
     }
     analyze_last = std::move(analyze_last_t);
     pclose(dumpsys);
+    log_frame.write(LogLevel::Debug, "Dumped Frame time data");
     return Fdata;
 }

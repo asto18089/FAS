@@ -9,6 +9,10 @@
 
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
+#include "include/log.h"
+#include "include/misc.h"
+
+Log &log_jank = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
 
 using namespace std::chrono;
 
@@ -23,6 +27,7 @@ constexpr std::array<unsigned int, 6> STANDARD_FRAMETIMES{FRAMETIME_30FPS, FRAME
 
 static unsigned long find_nearest_standard_frametime(unsigned long current_frametime)
 {
+    log_jank.write(LogLevel::Debug, "Start finding standard frametime");
     size_t left = 0, right = STANDARD_FRAMETIMES.size() - 1, mid = 0;
 
     while (left <= right)

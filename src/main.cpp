@@ -1,9 +1,7 @@
 #include <sched.h>
 #include <iostream>
 #include <chrono>
-#include <sstream>
 #include <filesystem>
-#include <fstream>
 #include <sys/types.h>
 #include <thread>
 #include <unistd.h>
@@ -13,71 +11,12 @@
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
 #include "include/close_others.h"
+#include "include/misc.h"
 
 using std::cout;
 using namespace std::chrono;
 using namespace std::this_thread;
 using namespace std::filesystem;
-
-static void bound2little()
-{
-    cpu_set_t mask;
-    CPU_ZERO(&mask);
-
-    std::ifstream fd("/sys/devices/system/cpu/cpufreq/policy0/related_cpus");
-    string related_cpus;
-    std::getline(fd, related_cpus);
-    std::istringstream cut(related_cpus);
-
-    int cpu = 0;
-    while (cut >> cpu)
-        CPU_SET(cpu, &mask);
-
-    sched_setaffinity(0, sizeof(mask), &mask);
-}
-
-static string getTopapp()
-{
-    auto Testfile = [](const char *location) { return access(location, F_OK) == 0; };
-
-    string result;
-
-    if (Testfile("/sys/kernel/gbe/gbe2_fg_pid"))
-    {
-        string pid;
-        std::ifstream f_pid, app;
-        f_pid.open("/sys/kernel/gbe/gbe2_fg_pid");
-        if (!f_pid)
-            return {};
-        f_pid >> pid;
-
-        app.open("/proc/" + pid + "/cmdline");
-        if (!app)
-            return {};
-        std::getline(app, result, '\0');
-
-        return result;
-    }
-
-    FILE *app = popen(R"(dumpsys activity activities|grep topResumedActivity=|tail -n 1|cut -d "{" -f2|cut -d "/" -f1|cut -d " " -f3)", "r");
-
-    char buffer[1024] = {0};
-
-    if (app == nullptr)
-    {
-        perror("Failed");
-        pclose(app);
-
-        return {}; // It's empty
-    }
-
-    fgets(buffer, sizeof(buffer), app);
-    result = buffer;
-    result.pop_back();
-
-    pclose(app);
-    return result;
-}
 
 int main()
 {
@@ -87,7 +26,7 @@ int main()
 
     Log &log = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
     log.setLevel(LogLevel::Info);
-    // log.setLevel(LogLevel::Debug);
+    log.setLevel(LogLevel::Debug);
     log.write(LogLevel::Info, "Log started");
 
     Cpufreq &cpu_controller = Cpufreq::getCpufreq();
@@ -104,7 +43,7 @@ int main()
 
     while (true)
     {
-        while (getSurfaceview().find(getTopapp()) == string::npos && !getTopapp().empty())
+        while (getSurfaceview().find(getTopApp()) == string::npos && !getTopApp().empty())
         {
             sleep_for(1s);
             log.write(LogLevel::Debug, "Not game");
