@@ -26,7 +26,7 @@ int main()
 
     Log &log = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
     log.setLevel(LogLevel::Info);
-    log.setLevel(LogLevel::Debug);
+    // log.setLevel(LogLevel::Debug);
     log.write(LogLevel::Info, "Log started");
 
     Cpufreq &cpu_controller = Cpufreq::getCpufreq();
