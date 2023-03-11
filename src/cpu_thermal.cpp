@@ -102,41 +102,6 @@ Cputhermal::Cputhermal()
     temp_node.detach();
 }
 
-/*void Cputhermal::temp_policy()
-{
-    prctl(PR_SET_NAME, "TempWatcher");
-
-    Cputhermal &thermal = Cputhermal::getCputhermal();
-    std::ifstream temp_fd;
-    int temp = 0;
-    while (true)
-    {
-        sleep_for(10ms);
-
-        temp_fd.open(thermal.temp_node);
-        temp_fd >> temp;
-        thermal.temp = temp / 1000;
-
-        if (thermal.temp >= thermal.target_temp && thermal.kpi < thermal.SuperFreqTable.size() - 1)
-            thermal.kpi++;
-        else if (thermal.temp < thermal.target_temp && thermal.kpi > 0)
-            thermal.kpi--;
-
-        thermal.inline_freq = thermal.SuperFreqTable[thermal.kpi];
-        temp_fd.close();
-
-        for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq"))
-        {
-            const string location = entry.path().string() + "/scaling_max_freq";
-
-            if (thermal.policy_freq.contains(location))
-                Lockvalue(location, std::min(thermal.policy_freq[location], thermal.inline_freq));
-            else
-                Lockvalue(location, thermal.inline_freq);
-        }
-    }
-}*/
-
 void Cputhermal::TLockvalue(const string &location, const unsigned long freq)
 {
     Cputhermal &thermal = Cputhermal::getCputhermal();
