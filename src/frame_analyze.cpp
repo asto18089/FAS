@@ -3,8 +3,11 @@
 #include <array>
 #include <algorithm>
 #include <chrono>
+#include <sstream>
+#include <iostream>
 
 #include "include/frame_analyze.h"
+#include "include/misc.h"
 #include "include/log.h"
 
 Log &log_frame = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
@@ -13,66 +16,36 @@ using namespace std::chrono;
 
 string getSurfaceview()
 {
-    log_frame.write(LogLevel::Debug, "Start dumping Surfaceview");
-    static string result;
-    static auto stamp = steady_clock::now();
-    if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 1s && !result.empty())
-        return result;
-    FILE *game = popen("dumpsys SurfaceFlinger --list 2>/dev/null", "r");
-
-    char buffer[1024] = {0};
-
-    if (game == nullptr)
+    string game = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger", "--list"});
+    std::istringstream ss_game(game);
+    string buf;
+    while (std::getline(ss_game, buf))
     {
-        perror("Failed");
-        pclose(game);
-
-        return {}; // It's empty
+        if (buf.find("SurfaceView[") != string::npos && buf.find("BLAST") != string::npos)
+            return buf;
+        if (buf.find("SurfaceView -") != string::npos)
+            return buf;
     }
-
-    while (fgets(buffer, sizeof(buffer), game))
-    {
-        result = buffer;
-        if ((result.find("SurfaceView[") != string::npos && result.find("BLAST") != string::npos) || // 安卓11以及以上用的方法
-             result.find("SurfaceView -") != string::npos)                                           // 安卓11以下的方法
-        {
-            result.pop_back();
-            break;
-        }
-        /*安卓9以下的方法还不一样，不过没有必要适配*/
-        result.clear();
-    }
-
-    pclose(game);
-    stamp = steady_clock::now();
-    log_frame.write(LogLevel::Debug, "Dumped Surfaceview");
-    return result;
+    return {};
 }
 
 FtimeStamps getOriginalData()
 {
     log_frame.write(LogLevel::Debug, "Start dumping frame time data");
     FtimeStamps Fdata;
-    const string cmd = "dumpsys SurfaceFlinger --latency \'" + getSurfaceview() + "\' 2>/dev/null";
-    FILE *dumpsys = popen(cmd.c_str(), "r");
 
-    if (dumpsys == nullptr)
-    {
-        perror("Failed");
-        pclose(dumpsys);
+    string dumpsys = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger", "--latency", getSurfaceview()});
 
+    if (dumpsys.empty())
         return Fdata;
-    }
 
-    char buffer[1024] = {0};
+    std::istringstream iss(dumpsys);
     static string analyze, analyze_last;
     string analyze_last_t;
 
-    while (std::fgets(buffer, sizeof(buffer), dumpsys))
+    while (std::getline(iss, analyze))
     {
         static std::array<unsigned long, 3> timestamps = {0};
-        analyze = buffer;
-        analyze.pop_back();
 
         if (analyze_last == analyze && !analyze_last.empty())
         {
@@ -117,8 +90,8 @@ FtimeStamps getOriginalData()
 
         analyze_last_t = analyze;
     }
+    
     analyze_last = std::move(analyze_last_t);
-    pclose(dumpsys);
     log_frame.write(LogLevel::Debug, "Dumped Frame time data");
     return Fdata;
 }

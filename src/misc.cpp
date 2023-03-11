@@ -11,7 +11,8 @@
 
 namespace bp = boost::process;
 
-std::string execCmdSync(const std::string &command, const std::vector<std::string> &args) {
+std::string execCmdSync(const std::string &command, const std::vector<std::string> &args)
+{
     bp::ipstream out, err;
     std::error_code ec; // error code
     bp::child c(command, args, bp::std_out > out, bp::std_err > err, ec);
@@ -74,6 +75,6 @@ std::string getTopApp()
         
     const auto pkgPos = str.find("package=") + 8;
 
-    name = str.substr(pkgPos, str.find(' ', pkgPos) - pkgPos);
+    name = str.substr(pkgPos, str.find(' ', pkgPos) - pkgPos - 1);
     return name;
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <array>
 #include <string>
+#include <sstream>
 #include <unistd.h>
 #include <chrono>
 #include <numeric>
@@ -101,19 +102,14 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 5s && result != 0)
             return result;
         
-        FILE *dumpsys = popen("dumpsys SurfaceFlinger 2>/dev/null", "r");
-        if (dumpsys == nullptr)
-        {
-            pclose(dumpsys);
-            perror("Failed");
-
+        string dumpsys = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger"});
+        if (dumpsys.empty())
             return result;
-        }
-        char buffer[1024] = {'\0'};
-
-        while (fgets(buffer, sizeof(buffer), dumpsys))
+            
+        std::istringstream iss(dumpsys);
+        std::string analyze;
+        while (std::getline(iss, analyze))
         {
-            const std::string_view analyze = buffer;
             if (analyze.find("refresh-rate") != std::string_view::npos)
             {
                 const size_t start = analyze.find(':') + 2;
@@ -122,10 +118,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
                 break;
             }
         }
-
-        pclose(dumpsys);
         stamp = steady_clock::now();
-        
         return result;
     };
     
