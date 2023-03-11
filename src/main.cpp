@@ -44,20 +44,13 @@ int main()
     while (true)
     {
         while (getSurfaceview().find(getTopApp()) == string::npos && !getTopApp().empty())
-        {
-            sleep_for(1s);
-            log.write(LogLevel::Debug, "Not game");
             cpu_controller.limit_clear();
-        }
 
         sleep_for(100ms);
 
         const jank_data jdata = analyzeFrameData(getOriginalData());
         if (jdata.empty())
-        {
-            log.write(LogLevel::Debug, "Empty jank data!");
             continue;
-        }
 
         /* nice是超时帧占所有帧的百分率 */
         log.write(LogLevel::Debug, std::to_string(jdata.nice()).c_str());

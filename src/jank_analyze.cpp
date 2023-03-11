@@ -14,6 +14,7 @@
 #include "include/misc.h"
 
 Log &log_jank = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
+#define DEBUG_LOG(x) log_jank.write(LogLevel::Debug, x)
 
 using namespace std::chrono;
 
@@ -28,7 +29,7 @@ constexpr std::array<unsigned int, 6> STANDARD_FRAMETIMES{FRAMETIME_30FPS, FRAME
 
 static unsigned long find_nearest_standard_frametime(unsigned long current_frametime)
 {
-    log_jank.write(LogLevel::Debug, "Start finding standard frametime");
+    DEBUG_LOG("Start finding standard frametime");
     size_t left = 0, right = STANDARD_FRAMETIMES.size() - 1, mid = 0;
 
     while (left <= right)
@@ -55,6 +56,7 @@ static unsigned long find_nearest_standard_frametime(unsigned long current_frame
 
     auto left_value = STANDARD_FRAMETIMES[left];
     auto right_value = STANDARD_FRAMETIMES[right];
+    DEBUG_LOG("Finded standard frametime :" + std::to_string(current_frametime - left_value < right_value - current_frametime ? left_value : right_value));
     return (current_frametime - left_value < right_value - current_frametime) ? left_value : right_value;
 }
 
@@ -68,11 +70,13 @@ static unsigned long find_nearest_standard_frametime(unsigned long current_frame
 
 jank_data analyzeFrameData(const FtimeStamps &Fdata)
 {
+    DEBUG_LOG("Start dumping frametimedata");
     jank_data Jdata;
 
     if (Fdata.vsync_timestamps.size() < 4)
     {
         Jdata.empty_private = true;
+        DEBUG_LOG("Useless frametime data");
         return Jdata;
     }
 
@@ -102,6 +106,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 5s && result != 0)
             return result;
         
+        DEBUG_LOG("Start dumping freshrate");
         string dumpsys = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger"});
         if (dumpsys.empty())
             return result;
@@ -119,6 +124,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             }
         }
         stamp = steady_clock::now();
+        DEBUG_LOG("Dumped freshrate :" + std::to_string(result));
         return result;
     };
     
@@ -153,6 +159,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         else
             Jdata.LOT++;
     }
+    DEBUG_LOG("Dumped frametimedata");
     return Jdata;
 }
 
