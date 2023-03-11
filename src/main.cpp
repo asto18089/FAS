@@ -47,7 +47,7 @@ int main()
         }
 
         const FtimeStamps Stampsdata = FtimeStamps();
-        const Jank_data jdata = analyzeFrameData(Stampsdata);
+        const Jank_data jdata = Jank_data(Stampsdata);
         if (jdata.empty())
             continue;
 
