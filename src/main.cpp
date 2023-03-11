@@ -46,7 +46,8 @@ int main()
             cpu_controller.limit_clear();
         }
 
-        const jank_data jdata = analyzeFrameData(getOriginalData());
+        const FtimeStamps Stampsdata = FtimeStamps();
+        const Jank_data jdata = analyzeFrameData(Stampsdata);
         if (jdata.empty())
             continue;
 

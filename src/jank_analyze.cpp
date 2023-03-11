@@ -68,7 +68,7 @@ static unsigned int find_nearest_standard_frametime(unsigned int current_frameti
    则说明需要更多性能
    如此可得到游戏运行刚好需要的频率 */
 
-jank_data analyzeFrameData(const FtimeStamps &Fdata)
+Jank_data analyzeFrameData(const FtimeStamps &Fdata)
 {
     DEBUG("Start dumping frametimedata");
     jank_data Jdata;
@@ -169,12 +169,12 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
     return Jdata;
 }
 
-double jank_data::nice() const
+double Jank_data::nice() const
 {
     return (double)OOT / (double)(OOT + LOT);
 }
 
-bool jank_data::empty() const
+bool Jank_data::empty() const
 {
     return empty_private;
 }

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <sstream>
+#include <sys/prctl.h>
 #include <iostream>
 
 #include "include/frame_analyze.h"
@@ -40,15 +41,14 @@ string getSurfaceview()
     return {};
 }
 
-FtimeStamps getOriginalData()
+void FtimeStamps::getOriginalData()
 {
     DEBUG("Start dumping frame time data");
-    FtimeStamps Fdata;
 
     string dumpsys = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger", "--latency", getSurfaceview()});
-    
+
     if (dumpsys.empty())
-        return Fdata;
+        return;
 
     std::istringstream iss(dumpsys);
     static string analyze, analyze_last;
@@ -60,9 +60,9 @@ FtimeStamps getOriginalData()
         
         if (analyze_last == analyze && !analyze_last.empty())
         {
-            Fdata.start_timestamps.clear();
-            Fdata.vsync_timestamps.clear();
-            Fdata.end_timestamps.clear();
+            start_timestamps.clear();
+            vsync_timestamps.clear();
+            end_timestamps.clear();
 
             analyze_last.clear();
             continue;
@@ -94,16 +94,36 @@ FtimeStamps getOriginalData()
             continue;
         else
         {
-            Fdata.start_timestamps.push_back(timestamps[0]);
-            Fdata.vsync_timestamps.push_back(timestamps[1]);
-            Fdata.end_timestamps.push_back(timestamps[2]);
+            start_timestamps.push_back(timestamps[0]);
+            vsync_timestamps.push_back(timestamps[1]);
+            end_timestamps.push_back(timestamps[2]);
         }
         
         analyze_last_t = analyze;
     }
     
     analyze_last = std::move(analyze_last_t);
-    Fdata.fps = (int)((*(Fdata.vsync_timestamps.cend()--) - *Fdata.vsync_timestamps.cbegin()) / 1000 / 1000 / 1000 / 1000 / 10000) / Fdata.end_timestamps.size();
+    fps = (int)((*(vsync_timestamps.cend()--) - *vsync_timestamps.cbegin()) / 1000 / 1000 / 1000 / 1000 / 10000) / vsync_timestamps.size();
     std::cout << Fdata.fps << '\n';
-    return Fdata;
+}
+
+void FtimeStamps::fpsWatcher()
+{
+    prctl(PR_SET_NAME, "FpsWatcher");
+    while (true)
+    {
+        string dump_A = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});
+        dump_A = dump_A.substr(15, 8);
+        long frame_A = stol(dump_A, nullptr, 16);
+        auto time_A = steady_clock::now();
+
+        sleep_for(1s);
+
+        string dump_B = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});
+        dump_B = dump_B.substr(15, 8);
+        long frame_B = stol(dump_A, nullptr, 16);
+        auto time_B = steady_clock::now();
+
+        fps = (frame_B - frame_A) / (duration_cast<microseconds>(timeB - time_A).count() / 1000 / 1000);
+    }
 }

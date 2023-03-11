@@ -30,7 +30,7 @@ constexpr static T mode(const vector<T> &v)
     return mode;
 }
 
-struct jank_data
+struct Jank_data
 {
 private:
     bool empty_private = false;
@@ -42,7 +42,7 @@ public:
     double nice() const;
     bool empty() const;
 
-    friend jank_data analyzeFrameData(const FtimeStamps &Fdata);
+    friend Jank_data analyzeFrameData(const FtimeStamps &Fdata);
 };
 
-jank_data analyzeFrameData(const FtimeStamps &Fdata);
+Jank_data analyzeFrameData(const FtimeStamps &Fdata);
