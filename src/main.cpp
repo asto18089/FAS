@@ -63,8 +63,8 @@ int main()
         log.write(LogLevel::Debug, std::to_string(jdata.nice()).c_str());
 
         const double nice = jdata.nice();
-        constexpr double left = 0.01;
-        constexpr double right = 0.02;
+        constexpr double left = 0.005;
+        constexpr double right = 0.01;
         if (nice >= left && nice <= right)
             log.write(LogLevel::Debug, "Proportion of frame delay is in line with expectation");
         else if (nice < left) // 掉帧少了，有余量
