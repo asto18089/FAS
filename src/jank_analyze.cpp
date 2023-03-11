@@ -30,36 +30,22 @@ constexpr std::array<std::pair<int, int>, 6> FPS_FRAMETIMES
     }
 };
 
-static int find_nearest_standard_frametime(int current_fps) // 通过当前fps找出标准帧渲染时间
+static std::pair<int, int> find_nearest_standard(int current_fps) // 通过当前fps找出标准帧渲染时间
 {
-    static auto stamp = steady_clock::now();
-    static int result = 0;
-    if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 10s && result != 0)
-        return result;
-    DEBUG("Start finding standard frametime");
+    if (current_fps <= FPS_FRAMETIMES.cbegin()->first + 3)
+        return *FPS_FRAMETIMES.cbegin();
 
-    auto it = std::upper_bound(STANDARD_FPS.rbegin(), STANDARD_FPS.rend(), current_frametime);
+    if (current_fps >= (FPS_FRAMETIMES.cend() - 1)->first)
+        return *(FPS_FRAMETIMES.cend() - 1);
 
-    if (it == STANDARD_FPS.rend())
+    for (const auto &i = FPS_FRAMETIMES.cbegin(); i < (FPS_FRAMETIMES.cend()--); i++)
     {
-        DEBUG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.front()));
-        result = STANDARD_FRAMETIMES.front();
+        if (i->first < current_fps && (i + 1)->first + 5 > current_fps) // 5 是fps可能的误差
+        {
+            return *(i + 1);
+        }
     }
-    else if (it == STANDARD_FPS.rbegin())
-    {
-        DEBUG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.back()));
-        result = STANDARD_FRAMETIMES.back();
-    }
-    else
-    {
-        auto left_value = *it;
-        auto right_value = *(it - 1);
-        result = (std::abs(static_cast<int>(current_frametime) - static_cast<int>(left_value)) < std::abs(static_cast<int>(right_value) - static_cast<int>(current_frametime))) ? left_value : right_value;
-        
-        DEBUG("Finded standard frametimes :" + std::to_string(left_value) + " and " + std::to_string(right_value));
-    }
-    stamp = steady_clock::now();
-    return result;
+    return {};
 }
 
 /* 让游戏始终运行在刚好(差点)满足需要的频率上
@@ -95,12 +81,12 @@ Jank_data analyzeFrameData(const FtimeStamps &Fdata)
             vsync_frametime.push_back(*i - *(i - 1));
     }
 
-    standard_frametime = mode(vsync_frametime) * 1000 * 1000;
-
     // 获得标准frametime
-    standard_frametime = find_nearest_standard_frametime(standard_frametime);
+    const auto &standard = find_nearest_standard(Fdata.getFps());
+    standard_frametime = standard.second;
+    Jdata.missed_fps = standard.first - Fdata.getFps();
     
-    DEBUG("standard_frametime :" + std::to_string(standard_frametime));
+    DEBUG("Standard frametime :" + std::to_string(standard_frametime));
     
     auto getRefreshRate = []()
     {

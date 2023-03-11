@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-template <typename T>
+/*template <typename T>
 constexpr static T mode(const vector<T> &v)
 {
     // 创建一个unordered_map，键为元素值，值为出现次数
@@ -28,7 +28,7 @@ constexpr static T mode(const vector<T> &v)
 
     // 返回众数
     return mode;
-}
+}*/
 
 struct Jank_data
 {
@@ -38,6 +38,7 @@ private:
 public:
     int OOT = 0;
     int LOT = 0;
+    int missed_fps = 0;
 
     double nice() const;
     bool empty() const;
