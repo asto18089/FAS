@@ -8,6 +8,7 @@
 #include <string_view>
 #include <charconv>
 #include <thread>
+#include <unordered_map>
 
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
@@ -17,18 +18,19 @@
 using namespace std::chrono;
 using namespace std::this_thread;
 
-#define INLINE_FT(x) constexpr unsigned int FRAMETIME_##x##FPS = 1000 * 1000 * 1000 / (x)
+constexpr std::array<std::pair<int, int>, 6> FPS_FRAMETIMES
+{
+    {
+        {30, 1000 * 1000 * 1000 / 30},
+        {45, 1000 * 1000 * 1000 / 45},
+        {60, 1000 * 1000 * 1000 / 60},
+        {90, 1000 * 1000 * 1000 / 90},
+        {120, 1000 * 1000 * 1000 / 120},
+        {144, 1000 * 1000 * 1000 / 144}
+    }
+};
 
-INLINE_FT(30);
-INLINE_FT(45);
-INLINE_FT(60);
-INLINE_FT(90);
-INLINE_FT(120);
-INLINE_FT(144);
-
-constexpr std::array<unsigned int, 6> STANDARD_FRAMETIMES{FRAMETIME_30FPS, FRAMETIME_45FPS, FRAMETIME_60FPS, FRAMETIME_90FPS, FRAMETIME_120FPS, FRAMETIME_144FPS};
-
-static unsigned int find_nearest_standard_frametime(unsigned int current_frametime)
+static int find_nearest_standard_frametime(int current_fps) // 通过当前fps找出标准帧渲染时间
 {
     static auto stamp = steady_clock::now();
     static int result = 0;
@@ -36,14 +38,14 @@ static unsigned int find_nearest_standard_frametime(unsigned int current_frameti
         return result;
     DEBUG("Start finding standard frametime");
 
-    auto it = std::upper_bound(STANDARD_FRAMETIMES.rbegin(), STANDARD_FRAMETIMES.rend(), current_frametime);
+    auto it = std::upper_bound(STANDARD_FPS.rbegin(), STANDARD_FPS.rend(), current_frametime);
 
-    if (it == STANDARD_FRAMETIMES.rend())
+    if (it == STANDARD_FPS.rend())
     {
         DEBUG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.front()));
         result = STANDARD_FRAMETIMES.front();
     }
-    else if (it == STANDARD_FRAMETIMES.rbegin())
+    else if (it == STANDARD_FPS.rbegin())
     {
         DEBUG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.back()));
         result = STANDARD_FRAMETIMES.back();
