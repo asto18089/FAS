@@ -25,7 +25,7 @@ int main()
     std::cout << std::unitbuf;
 
     Log &log = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
-    log.setLevel(LogLevel::Info);
+    // log.setLevel(LogLevel::Info);
     log.setLevel(LogLevel::Debug);
     log.write(LogLevel::Info, "Log started");
 
@@ -63,8 +63,8 @@ int main()
         log.write(LogLevel::Debug, std::to_string(jdata.nice()).c_str());
 
         const double nice = jdata.nice();
-        constexpr double left = 0.005;
-        constexpr double right = 0.01;
+        constexpr double left = 0.004;
+        constexpr double right = 0.008;
         if (nice >= left && nice <= right)
             log.write(LogLevel::Debug, "Proportion of frame delay is in line with expectation");
         else if (nice < left) // 掉帧少了，有余量
@@ -75,19 +75,14 @@ int main()
         else
         {
             log.write(LogLevel::Debug, "Proportion of frame delay exceeded expectation");
-            if (nice <= right * 11 / 10) // 掉帧多了，卡顿
+            if (nice <= right * 13 / 10) // 掉帧多了，卡顿
             {
                 log.write(LogLevel::Debug, "Exceeded expectation rating: 1");
-                cpu_controller.limit(1);
-            }
-            else if (nice <= right * 12 / 10)
-            {
-                log.write(LogLevel::Debug, "Exceeded expectation rating: 2");
                 cpu_controller.limit(2);
             }
             else
             {
-                log.write(LogLevel::Debug, "Exceeded expectation rating: 3");
+                log.write(LogLevel::Debug, "Exceeded expectation rating: 2");
                 cpu_controller.limit(3);
             }
         }
