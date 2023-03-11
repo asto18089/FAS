@@ -1,6 +1,4 @@
-if [[ "$mode" = "init" ]]; then 
-touch "/storage/emulated/0/Android/FAS/target_temp"
-elif [[ "$scene" = "standby" ]]; then 
+if [[ "$scene" = "standby" ]]; then 
 echo 80 > "/storage/emulated/0/Android/FAS/target_temp"
 elif [[ "$mode" = "powersave" ]]; then 
 echo 65 > "/storage/emulated/0/Android/FAS/target_temp"

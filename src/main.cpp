@@ -45,9 +45,9 @@ int main()
     {
         sleep_for(100ms);
         
-        while (getSurfaceview().find(getTopApp()) == string::npos && !getTopApp().empty() && getSurfaceview().empty())
+        while (getSurfaceview().find(getTopApp()) == string::npos || getTopApp().empty() || getSurfaceview().empty())
         {
-            sleep_for(100ms);
+            sleep_for(500ms);
             cpu_controller.limit_clear();
         }
 
