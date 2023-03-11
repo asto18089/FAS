@@ -39,12 +39,9 @@ void bound2little()
     CPU_ZERO(&mask);
 
     std::ifstream fd("/sys/devices/system/cpu/cpufreq/policy0/related_cpus");
-    std::string related_cpus;
-    std::getline(fd, related_cpus);
-    std::istringstream cut(related_cpus);
 
     int cpu = 0;
-    while (cut >> cpu)
+    while (fd >> cpu)
         CPU_SET(cpu, &mask);
 
     sched_setaffinity(0, sizeof(mask), &mask);
