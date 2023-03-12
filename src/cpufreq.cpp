@@ -12,13 +12,11 @@ using std::string;
 using std::vector;
 using namespace std::filesystem;
 
-Log &log_cpufreq = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
-
 Cpufreq::Cpufreq()
 {
-    log_cpufreq.write(LogLevel::Info, "Start creating a super frequency table");
+    INFO("Start creating a super frequency table");
     makeFreqTable(50000);
-    log_cpufreq.write(LogLevel::Info, "Create super frequency table complete");
+    INFO("Create super frequency table complete");
     limit_clear();
 }
 
@@ -76,7 +74,7 @@ vector<unsigned long> Cpufreq::get_super_table()
 
 void Cpufreq::writeFreq()
 {
-    log_cpufreq.write(LogLevel::Debug, "Start writing frequency");
+    DEBUG("Start writing frequency");
     directory_entry end_entry;
     for (const auto &entry : directory_iterator("/sys/devices/system/cpu/cpufreq")) // 保存最后一个entry
         end_entry = entry;
@@ -96,26 +94,16 @@ void Cpufreq::writeFreq()
         else
             Cputhermal::TLockvalue(entry.path().string() + "/scaling_max_freq", SuperFreqTable[kpi]);
     }
-    log_cpufreq.write(LogLevel::Debug, "Write frequency complete");
+    DEBUG("Write frequency complete");
 }
 
 void Cpufreq::limit(const int change_in)
 {
-    int change = 0;
-
-    if (change_in > 0 && kpi <= SuperFreqTable.size() * 6 / 10)
-        change = -change_in * 2 / 3;
-    else if (change_in > 0 && kpi <= SuperFreqTable.size() * 8 / 10)
-        change = -change_in / 2;
-
-    if (change_in < 0 && kpi <= SuperFreqTable.size() * 6 / 10)
-        change = -change_in * 3 / 2;
-    else if (change_in < 0 && kpi <= SuperFreqTable.size() * 8 / 10)
-        change = -change_in * 2;
+    int change = -change_in;
     
     if (change < 0)
     {
-        log_cpufreq.write(LogLevel::Debug, "Boost frequency level: " + std::to_string(-change));
+        DEBUG("Boost frequency level: " + std::to_string(-change));
         if (kpi + change >= 0)
             kpi += change;
         else
@@ -123,7 +111,7 @@ void Cpufreq::limit(const int change_in)
     }
     else
     {
-        log_cpufreq.write(LogLevel::Debug, "Reduce frequency level: " + std::to_string(change));
+        DEBUG("Reduce frequency level: " + std::to_string(change));
         if (kpi + change <= SuperFreqTable.size() - 1)
             kpi += change;
         else
@@ -135,7 +123,7 @@ void Cpufreq::limit(const int change_in)
 
 void Cpufreq::limit_clear()
 {
-    log_cpufreq.write(LogLevel::Debug, "Clearing frequency control");
+    DEBUG("Clearing frequency control");
     kpi = 0;
     auto readM = [](const string &policyname)
     {
@@ -152,14 +140,12 @@ void Cpufreq::limit_clear()
         const string policyname = entry.path().filename();
         Cputhermal::TLockvalue("/sys/devices/system/cpu/cpufreq/" + policyname + "/scaling_max_freq", readM(policyname));
     }
-    log_cpufreq.write(LogLevel::Debug, "Clear complete");
+    DEBUG("Clear complete");
 }
 
 void Cpufreq::set_scaling(const int new_scaling)
 {
-    log_cpufreq.write(LogLevel::Debug, "Setting frequency offset: " + std::to_string(new_scaling));
-
+    DEBUG("Setting frequency offset: " + std::to_string(new_scaling));
     scaling = new_scaling;
-
-    log_cpufreq.write(LogLevel::Debug, "Setting frequency offset completed");
+    DEBUG("Setting frequency offset completed");
 }

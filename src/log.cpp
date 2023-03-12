@@ -3,17 +3,6 @@
 
 #include "include/log.h"
 
-Log::Log(const std::string &filename)
-{
-    file.open(filename); // 打开日志文件
-    file.sync_with_stdio(false);
-}
-
-void Log::setLevel(LogLevel level)
-{
-    currentLevel = level; // 设置当前日志级别
-}
-
 void Log::write(LogLevel level, const std::string &message)
 {
     if (level >= currentLevel)
@@ -21,10 +10,15 @@ void Log::write(LogLevel level, const std::string &message)
         const time_t now = time(nullptr);
         char buffer[20] = {'\0'};
         strftime(buffer, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
-
-        file << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
-        std::cout << '[' << buffer << "] [" << levelToString(level) << "] " << message << '\n';
-        file.flush();
+        
+        std::string log_message = '[' + std::string(buffer) + "] [" + levelToString(level) + "] " + message + '\n';
+        int fd = open(DF_LOGFILE, O_WRONLY | O_APPEND | O_CREAT);
+        if (fd != -1)
+        {
+            ::write(fd, log_message.c_str(), log_message.size());
+            close(fd);
+        }
+        std::cout << log_message;
     }
 }
 

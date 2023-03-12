@@ -11,6 +11,7 @@ struct FtimeStamps
     vector<unsigned long> start_timestamps;
     vector<unsigned long> vsync_timestamps;
     vector<unsigned long> end_timestamps;
+    int fps = 0;
 
     FtimeStamps()
     {

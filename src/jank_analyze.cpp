@@ -7,6 +7,7 @@
 #include <numeric>
 #include <string_view>
 #include <charconv>
+#include <thread>
 
 #include "include/frame_analyze.h"
 #include "include/jank_analyze.h"
@@ -14,10 +15,8 @@
 #include "include/misc.h"
 
 using namespace std::chrono;
+using namespace std::this_thread;
 
-Log &log_jank = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
-
-#define DEBUG_LOG(x) log_jank.write(LogLevel::Debug, x)
 #define INLINE_FT(x) constexpr unsigned int FRAMETIME_##x##FPS = 1000 * 1000 * 1000 / (x)
 
 INLINE_FT(30);
@@ -31,26 +30,33 @@ constexpr std::array<unsigned int, 6> STANDARD_FRAMETIMES{FRAMETIME_30FPS, FRAME
 
 static unsigned int find_nearest_standard_frametime(unsigned int current_frametime)
 {
-    DEBUG_LOG("Start finding standard frametime");
+    static auto stamp = steady_clock::now();
+    static int result = 0;
+    if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 10s && result != 0)
+        return result;
+    DEBUG("Start finding standard frametime");
 
     auto it = std::upper_bound(STANDARD_FRAMETIMES.rbegin(), STANDARD_FRAMETIMES.rend(), current_frametime);
 
     if (it == STANDARD_FRAMETIMES.rend())
     {
-        DEBUG_LOG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.front()));
-        return STANDARD_FRAMETIMES.front();
+        DEBUG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.front()));
+        result = STANDARD_FRAMETIMES.front();
     }
-
-    if (it == STANDARD_FRAMETIMES.rbegin())
+    else if (it == STANDARD_FRAMETIMES.rbegin())
     {
-        DEBUG_LOG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.back()));
-        return STANDARD_FRAMETIMES.back();
+        DEBUG("Finded standard frametime :" + std::to_string(STANDARD_FRAMETIMES.back()));
+        result = STANDARD_FRAMETIMES.back();
     }
- 
-    auto left_value = *it;
-    auto right_value = *(it - 1);
-    auto result = (std::abs(static_cast<int>(current_frametime) - static_cast<int>(left_value)) < std::abs(static_cast<int>(right_value) - static_cast<int>(current_frametime))) ? left_value : right_value;
-    DEBUG_LOG("Finded standard frametimes :" + std::to_string(left_value) + " and " + std::to_string(right_value));
+    else
+    {
+        auto left_value = *it;
+        auto right_value = *(it - 1);
+        result = (std::abs(static_cast<int>(current_frametime) - static_cast<int>(left_value)) < std::abs(static_cast<int>(right_value) - static_cast<int>(current_frametime))) ? left_value : right_value;
+        
+        DEBUG("Finded standard frametimes :" + std::to_string(left_value) + " and " + std::to_string(right_value));
+    }
+    stamp = steady_clock::now();
     return result;
 }
 
@@ -64,13 +70,14 @@ static unsigned int find_nearest_standard_frametime(unsigned int current_frameti
 
 jank_data analyzeFrameData(const FtimeStamps &Fdata)
 {
-    DEBUG_LOG("Start dumping frametimedata");
+    DEBUG("Start dumping frametimedata");
     jank_data Jdata;
 
     if (Fdata.vsync_timestamps.size() < 4)
     {
         Jdata.empty_private = true;
-        DEBUG_LOG("Useless frametime data");
+        DEBUG("Useless frametime data");
+        sleep_for(300ms);
         return Jdata;
     }
 
@@ -90,7 +97,9 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
 
     // 获得标准frametime
     standard_frametime = find_nearest_standard_frametime(standard_frametime);
-
+    
+    DEBUG("standard_frametime :" + std::to_string(standard_frametime));
+    
     auto getRefreshRate = []()
     {
         static int result = 0;
@@ -99,7 +108,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
         if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 5s && result != 0)
             return result;
         
-        DEBUG_LOG("Start dumping freshrate");
+        DEBUG("Start dumping freshrate");
         string dumpsys = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger"});
         if (dumpsys.empty())
             return result;
@@ -117,7 +126,7 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             }
         }
         stamp = steady_clock::now();
-        DEBUG_LOG("Dumped freshrate :" + std::to_string(result));
+        DEBUG("Dumped freshrate :" + std::to_string(result));
         return result;
     };
     
@@ -146,13 +155,17 @@ jank_data analyzeFrameData(const FtimeStamps &Fdata)
             }
         }
 
-        //std::cout << i << '\n';
+        // std::cout << i << '\n';
         if (i > standard_frametime)
             Jdata.OOT++;
         else
             Jdata.LOT++;
     }
-    DEBUG_LOG("Dumped frametimedata");
+    if (standard_frametime > flashtime)
+        sleep_for(milliseconds(standard_frametime / 1000 / 1000) * 2 * 10);
+    else
+        sleep_for(milliseconds(standard_frametime / 1000 / 1000) * 10);
+    DEBUG("Dumped frametimedata");
     return Jdata;
 }
 

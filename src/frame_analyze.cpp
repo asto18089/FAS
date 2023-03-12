@@ -10,8 +10,6 @@
 #include "include/misc.h"
 #include "include/log.h"
 
-Log &log_frame = Log::getLog("/storage/emulated/0/Android/FAS/FasLog.txt");
-
 using namespace std::chrono;
 
 string getSurfaceview()
@@ -44,30 +42,22 @@ string getSurfaceview()
 
 FtimeStamps getOriginalData()
 {
-    log_frame.write(LogLevel::Debug, "Start dumping frame time data");
+    DEBUG("Start dumping frame time data");
     FtimeStamps Fdata;
 
-    log_frame.write(LogLevel::Debug, "Dumpsys");
     string dumpsys = execCmdSync("/system/bin/dumpsys", {"SurfaceFlinger", "--latency", getSurfaceview()});
     
-    log_frame.write(LogLevel::Debug, "if empty");
     if (dumpsys.empty())
         return Fdata;
 
-    log_frame.write(LogLevel::Debug, "creat iss");
-    
     std::istringstream iss(dumpsys);
     static string analyze, analyze_last;
     string analyze_last_t;
-
-    log_frame.write(LogLevel::Debug, "Start getline");
     
     while (std::getline(iss, analyze))
     {
-        log_frame.write(LogLevel::Debug, analyze);
         std::array<unsigned long, 3> timestamps = {0};
         
-        log_frame.write(LogLevel::Debug, "if analyze empty");
         if (analyze_last == analyze && !analyze_last.empty())
         {
             Fdata.start_timestamps.clear();
@@ -78,7 +68,6 @@ FtimeStamps getOriginalData()
             continue;
         }
         
-        log_frame.write(LogLevel::Debug, "get 3 stamps");
         for (size_t pos = 0, i = 0; pos < analyze.length();)
         {
             pos = std::find_if_not(analyze.cbegin() + pos, analyze.cend(), [](char c)
@@ -97,7 +86,6 @@ FtimeStamps getOriginalData()
             i++;
         }
         
-        log_frame.write(LogLevel::Debug, "reduce rubbish data");
         // 等于 0 或大于等于 10000000000000000
         auto pred = [](const auto &i) { return i == 0 || i >= 10000000000000000; };
         auto it = std::find_if(timestamps.cbegin(), timestamps.cend(), pred);
@@ -111,11 +99,11 @@ FtimeStamps getOriginalData()
             Fdata.end_timestamps.push_back(timestamps[2]);
         }
         
-        log_frame.write(LogLevel::Debug, "Save analyze");
         analyze_last_t = analyze;
     }
     
     analyze_last = std::move(analyze_last_t);
-    log_frame.write(LogLevel::Debug, "Dumped Frame time data");
+    Fdata.fps = (int)((*(Fdata.vsync_timestamps.cend()--) - *Fdata.vsync_timestamps.cbegin()) / 1000 / 1000 / 1000 / 1000 / 10000) / Fdata.end_timestamps.size();
+    std::cout << Fdata.fps << '\n';
     return Fdata;
 }
