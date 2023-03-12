@@ -32,16 +32,30 @@ constexpr std::array<std::pair<int, int>, 6> FPS_FRAMETIMES
 
 static std::pair<int, int> find_nearest_standard(int current_fps) // 通过当前fps找出标准帧渲染时间
 {
+    static auto stamp = steady_clock::now();
+    static std::pair<int, int> result = {0, 0};
+    
+    if (duration_cast<milliseconds>(steady_clock::now() - stamp) < 3s && result != std::pair<int, int>{0, 0})
+        return result;
+    stamp = steady_clock::now();
+    
     if (current_fps <= FPS_FRAMETIMES.cbegin()->first + 3)
+    {
+        result = *FPS_FRAMETIMES.cbegin();
         return *FPS_FRAMETIMES.cbegin();
+    }
 
     if (current_fps >= (FPS_FRAMETIMES.cend() - 1)->first)
+    {
+        result = *(FPS_FRAMETIMES.cend() - 1);
         return *(FPS_FRAMETIMES.cend() - 1);
+    }
 
     for (auto i = FPS_FRAMETIMES.cbegin(); i < FPS_FRAMETIMES.cend() - 1; i++)
     {
         if (i->first < current_fps && (i + 1)->first + 4 > current_fps) // 4 是fps可能的误差
         {
+            result = *(i + 1);
             return *(i + 1);
         }
     }
