@@ -57,6 +57,12 @@ int main()
         const double nice = jdata.nice();
         constexpr double left = 0.003;
         constexpr double right = 0.005;
+        if (jdata.missed_fps > 3)
+        {
+            DEBUG("Exceeded expectation from fps");
+            cpu_controller.limit(2);
+            continue;
+        }
         if (nice >= left && nice <= right)
             DEBUG("Proportion of frame delay is in line with expectation");
         else if (nice < left) // 掉帧少了，有余量

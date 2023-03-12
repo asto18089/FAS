@@ -8,7 +8,6 @@
 template <typename T>
 static bool Lockvalue(const std::string &location, const T &value)
 {
-    char buf[1024] = {'\0'};
     std::ifstream test(location);
     if (! test) {return false;}
     

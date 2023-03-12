@@ -38,9 +38,9 @@ static std::pair<int, int> find_nearest_standard(int current_fps) // 通过当�
     if (current_fps >= (FPS_FRAMETIMES.cend() - 1)->first)
         return *(FPS_FRAMETIMES.cend() - 1);
 
-    for (const auto &i = FPS_FRAMETIMES.cbegin(); i < (FPS_FRAMETIMES.cend()--); i++)
+    for (auto i = FPS_FRAMETIMES.cbegin(); i < FPS_FRAMETIMES.cend() - 1; i++)
     {
-        if (i->first < current_fps && (i + 1)->first + 5 > current_fps) // 5 是fps可能的误差
+        if (i->first < current_fps && (i + 1)->first + 4 > current_fps) // 4 是fps可能的误差
         {
             return *(i + 1);
         }
@@ -87,8 +87,9 @@ void Jank_data::analyzeFrameData(const FtimeStamps &Fdata)
     // 获得标准frametime
     const auto &standard = find_nearest_standard(Fdata.getFps());
     standard_frametime = standard.second;
-    missed_fps = standard.first - Fdata.getFps();
-    
+    missed_fps = standard.first - Fdata.getFps() - 2;
+    DEBUG("Missed fps :" + std::to_string(missed_fps));
+
     DEBUG("Standard frametime :" + std::to_string(standard_frametime));
     
     auto getRefreshRate = []()
