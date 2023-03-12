@@ -71,7 +71,7 @@ static unsigned int find_nearest_standard_frametime(unsigned int current_frameti
 Jank_data analyzeFrameData(const FtimeStamps &Fdata)
 {
     DEBUG("Start dumping frametimedata");
-    jank_data Jdata;
+    Jank_data Jdata;
 
     if (Fdata.vsync_timestamps.size() < 4)
     {

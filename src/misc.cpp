@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <unistd.h>
+#include <thread>
 #include <sys/wait.h>
 #include <sstream>
 
@@ -75,3 +76,5 @@ std::string getTopApp()
     name = str.substr(pkgPos, str.find(' ', pkgPos) - pkgPos - 1);
     return name;
 }
+
+parall

@@ -6,12 +6,14 @@
 #include <sstream>
 #include <sys/prctl.h>
 #include <iostream>
+#include <ppl.h>
 
 #include "include/frame_analyze.h"
 #include "include/misc.h"
 #include "include/log.h"
 
 using namespace std::chrono;
+using namespace concurrency;
 
 string getSurfaceview()
 {
@@ -103,27 +105,29 @@ void FtimeStamps::getOriginalData()
     }
     
     analyze_last = std::move(analyze_last_t);
-    fps = (int)((*(vsync_timestamps.cend()--) - *vsync_timestamps.cbegin()) / 1000 / 1000 / 1000 / 1000 / 10000) / vsync_timestamps.size();
-    std::cout << Fdata.fps << '\n';
 }
 
-void FtimeStamps::fpsWatcher()
+void FtimeStamps::fpsWatcher(int &fps)
 {
     prctl(PR_SET_NAME, "FpsWatcher");
+    auto time_A = steady_clock::now();
+    auto time_B = steady_clock::now();
+    string dump_A, dump_B;
     while (true)
     {
-        string dump_A = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});
+        time_A = steady_clock::now();
+        string dump_A = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});        
         dump_A = dump_A.substr(15, 8);
-        long frame_A = stol(dump_A, nullptr, 16);
-        auto time_A = steady_clock::now();
-
+        int frame_A = stoi(dump_A, nullptr, 16);
+        
         sleep_for(1s);
 
+        time_B = steady_clock::now();
         string dump_B = execCmdSync("/system/bin/service", {"call", "SurfaceFlinger", "1013"});
         dump_B = dump_B.substr(15, 8);
-        long frame_B = stol(dump_A, nullptr, 16);
-        auto time_B = steady_clock::now();
+        int frame_B = stoi(dump_B, nullptr, 16);
 
-        fps = (frame_B - frame_A) / (duration_cast<microseconds>(timeB - time_A).count() / 1000 / 1000);
+        fps = frame_B - frame_A / (duration_cast<microseconds>(time_B - time_A).count() / 1000 / 1000);
+        DEBUG("Fps :" + std::to_string(fps));
     }
 }
